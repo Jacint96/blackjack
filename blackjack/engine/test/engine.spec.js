@@ -43,18 +43,13 @@ describe('calculate()', function () {
   })
 
   describe('blackjack', function () {
-    [
-      '♥1 ♣10 ♥K',
-      '♥1 ♣J',
-      '♣2 ♥1 ♠1 ♦1 ♥4 ♦2'
-    ]
-      .forEach(function (value) {
-        it(`${value}`, function () {
-          const cards = serializeCards(value)
-          const result = lib.calculate(cards).hi
-          assert.equal(result, 21)
-        })
+    ;['♥1 ♣10 ♥K', '♥1 ♣J', '♣2 ♥1 ♠1 ♦1 ♥4 ♦2'].forEach(function (value) {
+      it(`${value}`, function () {
+        const cards = serializeCards(value)
+        const result = lib.calculate(cards).hi
+        assert.equal(result, 21)
       })
+    })
   })
 })
 
@@ -71,10 +66,14 @@ describe('prize calculation', function () {
       playerHasBlackjack: false,
       playerHasBusted: false,
       playerValue: playerValue,
-      bet: initialBet
+      bet: initialBet,
     }
     assert.equal(lib.getPrize(playerHand, dealerCards), initialBet * 2, 'player Won twice')
-    assert.equal(lib.getPrize(playerHand, dealerCards.concat(serializeCards('♥1'))), initialBet, 'player Push (bet value is returned')
+    assert.equal(
+      lib.getPrize(playerHand, dealerCards.concat(serializeCards('♥1'))),
+      initialBet,
+      'player Push (bet value is returned',
+    )
     assert.equal(lib.getPrize(playerHand, dealerCards.concat(serializeCards('♥2'))), 0, 'player lose')
   })
   it('should pay insurance when dealer has BJ', function () {
@@ -89,7 +88,7 @@ describe('prize calculation', function () {
       playerHasBlackjack: false,
       playerHasBusted: false,
       playerValue: playerValue,
-      bet: initialBet
+      bet: initialBet,
     }
     const prize = lib.getPrize(playerHand, dealerCards)
     assert.equal(prize, 0, `insurance does not pay on right side`)
@@ -107,7 +106,7 @@ describe('prize calculation', function () {
       playerHasBlackjack: false,
       playerHasBusted: false,
       playerValue: playerValue,
-      bet: initialBet
+      bet: initialBet,
     }
     const prize = lib.getPrize(playerHand, dealerCards)
     assert.equal(lib.isBlackjack(dealerCards), true, 'dealer has blackjack')
@@ -127,7 +126,7 @@ describe('prize calculation', function () {
       playerHasBlackjack: lib.isBlackjack(playerCards) && hasSplit === false,
       playerHasBusted: false,
       playerValue: playerValue,
-      bet: initialBet
+      bet: initialBet,
     }
     const prize = lib.getPrize(playerHand, dealerCards)
     assert.equal(lib.isBlackjack(dealerCards), false, 'dealer has not blackjack')
@@ -137,23 +136,14 @@ describe('prize calculation', function () {
 
 describe('Soft Hand', function () {
   describe('# are all soft hands', function () {
-    [
-      '1d 3d 3s',
-      '1d 6h',
-      '1d 2h 4h',
-      '1d 1h 5s'
-    ].forEach(cards => {
+    ;['1d 3d 3s', '1d 6h', '1d 2h 4h', '1d 1h 5s'].forEach((cards) => {
       it(cards, function () {
         assert.ok(lib.isSoftHand(serializeCards(cards)))
       })
     })
   })
   describe('# are not soft hands', function () {
-    [
-      '10d 7d',
-      '7d 9h',
-      '5d 2h 9h'
-    ].forEach(cards => {
+    ;['10d 7d', '7d 9h', '5d 2h 9h'].forEach((cards) => {
       it(cards, function () {
         assert.ok(!lib.isSoftHand(serializeCards(cards)))
       })
