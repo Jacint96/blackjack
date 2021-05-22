@@ -73,6 +73,7 @@ export const defaultState = (rules: Rule) : State => {
     rules: rules,
     dealerHoleCard: null,
     dealerHasBlackjack: false,
-    dealerHasBusted: false
+    dealerHasBusted: false,
+    dealerCards: []
   }
 }

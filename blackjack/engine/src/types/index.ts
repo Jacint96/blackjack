@@ -1,6 +1,6 @@
 export type Action = {
   type: string,
-  payload: ?any
+  payload?: any
 }
 
 export type AvailableActions = {
@@ -35,8 +35,8 @@ export type Hand = {
 }
 
 export type HandInfo = {
-  left: any | Hand,
-  right: Hand
+  left: Partial<Hand>,
+  right: Partial<Hand>
 }
 
 export type SideBets = {
@@ -74,7 +74,7 @@ export type State = {
   sideBetsInfo: any,
   rules: Rule,
   dealerCards: Array<Card>,
-  dealerHoleCard: ?Card,
+  dealerHoleCard?: Card,
   dealerHasBlackjack: boolean,
   dealerHasBusted: boolean
 }

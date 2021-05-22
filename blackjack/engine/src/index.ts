@@ -5,7 +5,7 @@
  * GPL 2.0 Licensed
  */
 
-'use strict'
+
 import * as constants from './constants'
 import * as engine from './engine'
 import * as presets from './presets'

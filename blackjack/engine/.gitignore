@@ -43,3 +43,6 @@ jspm_packages
 ._*
 .DS_Store
 /build/
+
+# buid files
+dist
