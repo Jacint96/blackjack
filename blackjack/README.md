@@ -1,70 +1,28 @@
-# Getting Started with Create React App
+# Blackjack
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Basic Blackjack game build with React, Express, MongoDB and Redis.
 
-## Available Scripts
+[Demo →](https://blackjack.tdjsnelling.now.sh/)
 
-In the project directory, you can run:
+![Screenshot](https://imgur.com/SdObiYu.jpg)
 
-### `npm start`
+I originally built this to be played with Bitcoin, but UK regulations are strict and I didn't fancy jumping through the hoops. It could still be adapted if someone wanted to make the changes.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Game logic
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+The game logic is powered by the amazing [engine-blackjack](https://github.com/kedoska/engine-blackjack) library. My project just adds a front-end and account/state management.
 
-### `npm test`
+### Architecture
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- Each user creates an account with email address and password.
+- Each account has a unique identifier. This is used to keep track of an accounts current game state.
+- Game state is stored by redis; the `key` is the users identifier, and the `value` is the current game state.
+- All game actions happen on the server. The user makes a request with their identifier and their desired action, the server fetches the current game state from redis, carries out the action, and then stores and responds with the new game state.
 
 ### Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Currently, the project is set up to have the front-end deployed on [Now](https://now.sh) and the back-end deployed on any platform that will build and run Docker containers.
 
-### `npm run build` fails to minify
+### License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+GPLv3.0. See LICENSE.
