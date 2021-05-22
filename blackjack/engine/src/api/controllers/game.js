@@ -1,27 +1,34 @@
+const { Game, actions, presets } = require('../../game-engine')
+
 const mongoose = require('mongoose')
-const { Game, actions, presets } = require('engine-blackjack')
 const redis = require('redis')
 const User = require('../schema/user')
 
 const dbHost = process.env.DOCKER ? 'blackjack-mongo:27018' : 'localhost'
-mongoose.connect(`mongodb://${dbHost}/Blackjack`, {
-  useNewUrlParser: true
-})
+mongoose
+  .connect(`mongodb://${dbHost}/Blackjack`, {
+    useNewUrlParser: true,
+  })
+  .then(() => {
+    console.info('Db connected!')
+  })
+  .catch((e) => {
+    console.error('Mongoose connection error!')
+    console.error(e)
+  })
 
 const redisHost = process.env.DOCKER ? 'blackjack-redis' : 'localhost'
 const client = redis.createClient({ url: `redis://${redisHost}` })
 
 const overrideRules = {
   decks: 6,
-  insurance: false
+  insurance: false,
 }
 
 module.exports = {
   start: (req, res) => {
     const game = new Game(null, presets.getRules(overrideRules))
-    const afterDealState = game.dispatch(
-      actions.deal({ bet: parseInt(req.params.bet) })
-    )
+    const afterDealState = game.dispatch(actions.deal({ bet: parseInt(req.params.bet) }))
     client.set(req.uid.toString(), JSON.stringify(afterDealState))
     res.send(afterDealState)
   },
@@ -55,22 +62,16 @@ module.exports = {
             newState = game.dispatch(actions.insurance())
             break
           case 'double':
-            newState = game.dispatch(
-              actions.double({ position: req.params.option })
-            )
+            newState = game.dispatch(actions.double({ position: req.params.option }))
             break
           case 'split':
             newState = game.dispatch(actions.split())
             break
           case 'hit':
-            newState = game.dispatch(
-              actions.hit({ position: req.params.option })
-            )
+            newState = game.dispatch(actions.hit({ position: req.params.option }))
             break
           case 'stand':
-            newState = game.dispatch(
-              actions.stand({ position: req.params.option })
-            )
+            newState = game.dispatch(actions.stand({ position: req.params.option }))
             break
           default:
             res.sendStatus(404)
@@ -80,22 +81,17 @@ module.exports = {
           User.findOne({ email: req.email }, (err, doc) => {
             if (!err) {
               if (doc) {
-                let newBalance =
-                  doc.balance + newState.wonOnLeft + newState.wonOnRight
+                let newBalance = doc.balance + newState.wonOnLeft + newState.wonOnRight
 
                 if (newState.wonOnLeft === 0 && newState.wonOnRight === 0) {
                   newBalance -= newState.finalBet
                 }
 
-                User.findOneAndUpdate(
-                  { email: req.email },
-                  { $set: { balance: newBalance } },
-                  (err, doc) => {
-                    if (err || !doc) {
-                      res.sendStatus(500)
-                    }
+                User.findOneAndUpdate({ email: req.email }, { $set: { balance: newBalance } }, (err, doc) => {
+                  if (err || !doc) {
+                    res.sendStatus(500)
                   }
-                )
+                })
               } else {
                 res.sendStatus(404)
               }
@@ -111,5 +107,5 @@ module.exports = {
         res.sendStatus(500)
       }
     })
-  }
+  },
 }
