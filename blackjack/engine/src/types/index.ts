@@ -32,6 +32,7 @@ export type Hand = {
   playerHasSurrendered: boolean
   close: boolean
   availableActions: AvailableActions
+  bet: number
 }
 
 export type HandInfo = {
@@ -77,4 +78,6 @@ export type State = {
   dealerHoleCard?: Card
   dealerHasBlackjack: boolean
   dealerHasBusted: boolean
+  dealerValue: HandValue
+  cardCount: number
 }

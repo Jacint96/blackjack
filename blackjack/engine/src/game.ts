@@ -19,7 +19,7 @@
 
 import * as TYPES from './constants'
 import * as engine from './engine'
-import type { Action, State, Hand, HandValue, Rule } from './types'
+import type { Action, State, Hand, HandValue, Rule, Card } from './types'
 import { defaultState, getDefaultSideBets, getRules } from './presets'
 const actions = require('./actions')
 
@@ -31,14 +31,22 @@ const appendEpoch = (obj) => {
   })
 }
 
+// TODO: set these correctly
+const initialRules: Rule = {
+  decks: 1,
+  standOnSoft17: true,
+  doubleAfterSplit: true,
+  insurance: true,
+  showdownAfterAceSplit: true,
+  double: 'nemtom',
+  split: true,
+  surrender: true,
+}
+
 export default class Game {
-  state: State = {}
-  dispatch: Function
-  _dispatch: Function
-  getState: Function
-  setState: Function
-  enforceRules: Function
-  constructor(initialState: State, rules: Rule = getRules({})) {
+  private state: State
+
+  constructor(initialState: State, rules: Rule = getRules(initialRules)) {
     this.state = initialState ? Object.assign({}, initialState) : defaultState(rules)
     this.dispatch = this.dispatch.bind(this)
     this.getState = this.getState.bind(this)
@@ -86,16 +94,11 @@ export default class Game {
   }
 
   getState(): State {
-    return {
-      ...this.state,
-    }
+    return { ...this.state }
   }
 
-  setState(state: State): void {
-    this.state = {
-      ...this.state,
-      ...state,
-    }
+  setState(state: Partial<State>): void {
+    this.state = { ...this.state, ...state }
   }
 
   dispatch(action: Action): State {
@@ -268,7 +271,7 @@ export default class Game {
         const forceShowdown = rules.showdownAfterAceSplit && playerCardsRightPosition[0].value === 1
         const cardRight = deck.splice(deck.length - 2, 1)
         const cardLeft = deck.splice(deck.length - 1, 1)
-        deck = deck.filter((x) => [cardLeft, cardRight].indexOf(x) === -1)
+        deck = deck.filter((x) => !cardLeft.includes(x) && !cardRight.includes(x))
         playerCardsLeftPosition.push(cardLeft[0])
         playerCardsRightPosition.push(cardRight[0])
         const historyItem = appendEpoch({
@@ -315,8 +318,8 @@ export default class Game {
         const position = action.payload.position
         const card = deck.splice(deck.length - 1, 1)
         let playerCards = []
-        let left = {}
-        let right = {}
+        let left: Partial<Hand> = {}
+        let right: Partial<Hand> = {}
         const hasSplit = history.some((x) => x.type === TYPES.SPLIT)
         if (position === TYPES.LEFT) {
           playerCards = handInfo.left.cards.concat(card)
@@ -368,9 +371,9 @@ export default class Game {
         const { initialBet, deck, handInfo, dealerCards, cardCount, history, hits } = this.state
         const position = action.payload.position
         const card = deck.splice(deck.length - 1, 1)
-        let playerCards: Array<card> = []
-        let left = {}
-        let right = {}
+        let playerCards: Array<Card> = []
+        let left: Partial<Hand> = {}
+        let right: Partial<Hand> = {}
         const hasSplit = history.some((x) => x.type === TYPES.SPLIT)
         // TODO: remove position and replace it with stage info #hit
         if (position === TYPES.LEFT) {
@@ -418,17 +421,17 @@ export default class Game {
         let stage = ''
         const { handInfo, history, hits } = this.state
         const position = action.payload.position
-        let left = {}
-        let right = {}
+        let left: Partial<Hand> = {}
+        let right: Partial<Hand> = {}
         const hasSplit = history.some((x) => x.type === TYPES.SPLIT)
         if (position === TYPES.LEFT) {
           right = Object.assign({}, handInfo.right)
-          left = engine.getHandInfoAfterStand(handInfo.left)
+          left = engine.getHandInfoAfterStand(handInfo.left as Hand)
           stage = TYPES.STAGE_SHOWDOWN
         }
         if (position === TYPES.RIGHT) {
           left = Object.assign({}, handInfo.left)
-          right = engine.getHandInfoAfterStand(handInfo.right)
+          right = engine.getHandInfoAfterStand(handInfo.right as Hand)
           if (right.close) {
             stage = TYPES.STAGE_SHOWDOWN
           }
@@ -503,7 +506,7 @@ export default class Game {
       }
       case TYPES.SURRENDER: {
         const { handInfo, history, hits } = this.state
-        handInfo.right = engine.getHandInfoAfterSurrender(handInfo.right)
+        handInfo.right = engine.getHandInfoAfterSurrender(handInfo.right as Hand)
         const historyItem = appendEpoch(action)
         this.setState({
           stage: TYPES.STAGE_SHOWDOWN,

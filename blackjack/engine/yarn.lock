@@ -3,8 +3,9 @@
 
 
 "52-deck@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/52-deck/-/52-deck-1.0.0.tgz#7197f72e1a0714097fcfd61c8e30bacdad609848"
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/52-deck/-/52-deck-1.1.0.tgz#be5c0f88bf70450502f298ce9d057e3939669ab2"
+  integrity sha1-vlwPiL9wRQUC8pjOnQV+OTlmmrI=
 
 "@babel/code-frame@7.12.11":
   version "7.12.11"
