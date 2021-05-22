@@ -25,14 +25,10 @@ const actions = require('./actions')
 
 const appendEpoch = (obj) => {
   const { payload = { bet: 0 } } = obj
-  return Object.assign(
-    {},
-    obj,
-    {
-      value: payload.bet || 0,
-      ts: new Date().getTime()
-    }
-  )
+  return Object.assign({}, obj, {
+    value: payload.bet || 0,
+    ts: new Date().getTime(),
+  })
 }
 
 export default class Game {
@@ -42,7 +38,7 @@ export default class Game {
   getState: Function
   setState: Function
   enforceRules: Function
-  constructor (initialState: State, rules: Rule = getRules({})) {
+  constructor(initialState: State, rules: Rule = getRules({})) {
     this.state = initialState ? Object.assign({}, initialState) : defaultState(rules)
     this.dispatch = this.dispatch.bind(this)
     this.getState = this.getState.bind(this)
@@ -51,21 +47,21 @@ export default class Game {
     this._dispatch = this._dispatch.bind(this)
   }
 
-  canDouble (double: string, playerValue: HandValue): boolean {
+  canDouble(double: string, playerValue: HandValue): boolean {
     if (double === 'none') {
       return false
     } else if (double === '9or10') {
-      return ((playerValue.hi === 9) || (playerValue.hi === 10))
+      return playerValue.hi === 9 || playerValue.hi === 10
     } else if (double === '9or10or11') {
-      return ((playerValue.hi >= 9) && (playerValue.hi <= 11))
+      return playerValue.hi >= 9 && playerValue.hi <= 11
     } else if (double === '9thru15') {
-      return ((playerValue.hi >= 9) && (playerValue.hi <= 15))
+      return playerValue.hi >= 9 && playerValue.hi <= 15
     } else {
       return true
     }
   }
 
-  enforceRules (handInfo: Hand): Hand {
+  enforceRules(handInfo: Hand): Hand {
     const { availableActions } = handInfo
     const { playerValue } = handInfo
     const { rules, history } = this.state
@@ -79,7 +75,7 @@ export default class Game {
       availableActions.surrender = false
     }
     if (!rules.doubleAfterSplit) {
-      if (history.some(x => x.type === TYPES.SPLIT)) {
+      if (history.some((x) => x.type === TYPES.SPLIT)) {
         availableActions.double = false
       }
     }
@@ -89,28 +85,28 @@ export default class Game {
     return handInfo
   }
 
-  getState () : State {
+  getState(): State {
     return {
-      ...this.state
+      ...this.state,
     }
   }
 
-  setState (state: State): void {
+  setState(state: State): void {
     this.state = {
       ...this.state,
-      ...state
+      ...state,
     }
   }
 
-  dispatch (action: Action): State {
+  dispatch(action: Action): State {
     const { stage, handInfo, history } = this.state
     const { type, payload = {} } = action
     const { position = TYPES.RIGHT } = payload
     const isLeft = position === TYPES.LEFT
-    const historyHasSplit = history.some(x => x.type === TYPES.SPLIT)
+    const historyHasSplit = history.some((x) => x.type === TYPES.SPLIT)
     const hand = handInfo[position]
 
-    let isActionAllowed = engine.isActionAllowed(type, stage)
+    const isActionAllowed = engine.isActionAllowed(type, stage)
 
     if (!isActionAllowed) {
       return this._dispatch(actions.invalid(action, `${type} is not allowed when stage is ${stage}`))
@@ -118,7 +114,7 @@ export default class Game {
 
     const whiteList = [TYPES.RESTORE, TYPES.DEAL, TYPES.SHOWDOWN]
 
-    if (isActionAllowed && whiteList.some(x => x === type)) {
+    if (isActionAllowed && whiteList.some((x) => x === type)) {
       // this is a safe action. We do not need to check the status of the stage
       // so we return the result now!
       if (type === TYPES.DEAL && typeof payload.bet !== 'number') {
@@ -129,38 +125,54 @@ export default class Game {
 
     if (hand.close) {
       // TODO: consolidate this one, probably is just enough to consider the availableActions (see more below)
-      return this._dispatch(actions.invalid(action, `${type} is not allowed because "${position}" side of the table is closed on "${stage}"`))
+      return this._dispatch(
+        actions.invalid(
+          action,
+          `${type} is not allowed because "${position}" side of the table is closed on "${stage}"`,
+        ),
+      )
     }
 
     if (isLeft && !historyHasSplit) {
       // You want to do something on "left" but no split found in history.
       // default side is "right". When an action want to edit the "left" side of the table
       // a valid split should be appear in the history. If not, "left" position is not ready to be changed
-      if (!history.some(x => x.type === TYPES.SPLIT)) {
-        return this._dispatch(actions.invalid(action, `${type} is not allowed because there is no SPLIT in current stage "${stage}"`))
+      if (!history.some((x) => x.type === TYPES.SPLIT)) {
+        return this._dispatch(
+          actions.invalid(action, `${type} is not allowed because there is no SPLIT in current stage "${stage}"`),
+        )
       }
     }
 
     if (isLeft && !handInfo.right.close) {
       // You want to do something on "left" but "right" is still open
-      return this._dispatch(actions.invalid(action, `${type} is not allowed because you need to finish "left" hand "${stage}"`))
+      return this._dispatch(
+        actions.invalid(action, `${type} is not allowed because you need to finish "left" hand "${stage}"`),
+      )
     }
 
     if (!hand.availableActions[type.toLowerCase()]) {
-      return this._dispatch(actions.invalid(action, `${type} is not currently allowed on position "${position}". Stage is "${stage}"`))
+      return this._dispatch(
+        actions.invalid(action, `${type} is not currently allowed on position "${position}". Stage is "${stage}"`),
+      )
     }
 
     return this._dispatch(action)
   }
 
-  _dispatch (action: Action): State {
+  _dispatch(action: Action): State {
     switch (action.type) {
       case TYPES.DEAL: {
         const { bet, sideBets } = action.payload
-        const { rules: { insurance }, availableBets, history, hits } = this.state
+        const {
+          rules: { insurance },
+          availableBets,
+          history,
+          hits,
+        } = this.state
         const playerCards = this.state.deck.splice(this.state.deck.length - 2, 2)
         const dealerCards = this.state.deck.splice(this.state.deck.length - 1, 1)
-        const dealerHoleCard = this.state.deck.splice(this.state.deck.length - 1, 1)[ 0 ]
+        const dealerHoleCard = this.state.deck.splice(this.state.deck.length - 1, 1)[0]
         const dealerValue = engine.calculate(dealerCards)
         let dealerHasBlackjack = engine.isBlackjack(dealerCards.concat([dealerHoleCard]))
         const right = this.enforceRules(engine.getHandInfoAfterDeal(playerCards, dealerCards, bet))
@@ -172,14 +184,14 @@ export default class Game {
             double: false,
             hit: false,
             split: false,
-            surrender: false
+            surrender: false,
           }
         }
         const sideBetsInfo = engine.getSideBetsInfo(availableBets, sideBets, playerCards, dealerCards)
         const historyItem = appendEpoch({
           ...action,
           right: playerCards,
-          dealerCards
+          dealerCards,
         })
         this.setState({
           initialBet: bet,
@@ -188,18 +200,16 @@ export default class Game {
           dealerHoleCard: dealerHoleCard,
           dealerValue: dealerValue,
           dealerHasBlackjack: dealerHasBlackjack,
-          deck: this.state.deck.filter(x => dealerCards
-              .concat(playerCards)
-              .indexOf(x) === -1),
+          deck: this.state.deck.filter((x) => dealerCards.concat(playerCards).indexOf(x) === -1),
           cardCount: engine.countCards(playerCards.concat(dealerCards)),
           handInfo: {
             left: {},
-            right
+            right,
           },
           sideBetsInfo: sideBetsInfo,
           availableBets: getDefaultSideBets(false),
           history: history.concat(historyItem),
-          hits: hits + 1
+          hits: hits + 1,
         })
 
         if (right.playerHasBlackjack) {
@@ -212,9 +222,9 @@ export default class Game {
             // nothing left, let's go and tell the customer he loses this game
             this._dispatch(actions.showdown())
           }
-        // else
-        // in this case, the game must continue in "player-turn-right"
-        // waiting for the insurance action
+          // else
+          // in this case, the game must continue in "player-turn-right"
+          // waiting for the insurance action
         }
         break
       }
@@ -224,13 +234,14 @@ export default class Game {
         const dealerHasBlackjack = engine.isBlackjack(dealerCards.concat([dealerHoleCard]))
         const insuranceValue = bet > 0 ? initialBet / 2 : 0
         const isFirstCardAce = dealerCards[0].value === 1
-        const insurancePrize = (isFirstCardAce && dealerHasBlackjack && insuranceValue > 0 && bet > 0) ? insuranceValue * 3 : 0
+        const insurancePrize =
+          isFirstCardAce && dealerHasBlackjack && insuranceValue > 0 && bet > 0 ? insuranceValue * 3 : 0
         const right = this.enforceRules(engine.getHandInfoAfterInsurance(handInfo.right.cards, dealerCards))
         right.bet = initialBet
         right.close = dealerHasBlackjack
         const historyItem = appendEpoch({
           ...action,
-          payload: { bet: insuranceValue || 0 }
+          payload: { bet: insuranceValue || 0 },
         })
         this.setState({
           handInfo: { left: {}, right },
@@ -240,9 +251,9 @@ export default class Game {
             ...sideBetsInfo,
             insurance: {
               risk: insuranceValue,
-              win: insurancePrize
-            }
-          }
+              win: insurancePrize,
+            },
+          },
         })
         if (dealerHasBlackjack) {
           this._dispatch(actions.showdown())
@@ -252,22 +263,22 @@ export default class Game {
       case TYPES.SPLIT: {
         const { rules, initialBet, handInfo, dealerCards, history, hits } = this.state
         let deck = this.state.deck
-        const playerCardsLeftPosition = [handInfo.right.cards[ 0 ]]
-        const playerCardsRightPosition = [handInfo.right.cards[ 1 ]]
-        const forceShowdown = rules.showdownAfterAceSplit && playerCardsRightPosition[ 0 ].value === 1
-        let cardRight = deck.splice(deck.length - 2, 1)
-        let cardLeft = deck.splice(deck.length - 1, 1)
-        deck = deck.filter(x => [ cardLeft, cardRight ].indexOf(x) === -1)
-        playerCardsLeftPosition.push(cardLeft[ 0 ])
-        playerCardsRightPosition.push(cardRight[ 0 ])
+        const playerCardsLeftPosition = [handInfo.right.cards[0]]
+        const playerCardsRightPosition = [handInfo.right.cards[1]]
+        const forceShowdown = rules.showdownAfterAceSplit && playerCardsRightPosition[0].value === 1
+        const cardRight = deck.splice(deck.length - 2, 1)
+        const cardLeft = deck.splice(deck.length - 1, 1)
+        deck = deck.filter((x) => [cardLeft, cardRight].indexOf(x) === -1)
+        playerCardsLeftPosition.push(cardLeft[0])
+        playerCardsRightPosition.push(cardRight[0])
         const historyItem = appendEpoch({
           ...action,
           payload: { bet: initialBet },
           left: playerCardsLeftPosition,
-          right: playerCardsRightPosition
+          right: playerCardsRightPosition,
         })
-        let left = this.enforceRules(engine.getHandInfoAfterSplit(playerCardsLeftPosition, dealerCards, initialBet))
-        let right = this.enforceRules(engine.getHandInfoAfterSplit(playerCardsRightPosition, dealerCards, initialBet))
+        const left = this.enforceRules(engine.getHandInfoAfterSplit(playerCardsLeftPosition, dealerCards, initialBet))
+        const right = this.enforceRules(engine.getHandInfoAfterSplit(playerCardsRightPosition, dealerCards, initialBet))
         let stage = ''
         if (forceShowdown) {
           stage = TYPES.STAGE_SHOWDOWN
@@ -287,11 +298,11 @@ export default class Game {
           stage: stage,
           handInfo: {
             left,
-            right
+            right,
           },
           deck: deck,
           history: history.concat(historyItem),
-          hits: hits + 1
+          hits: hits + 1,
         })
         if (stage === TYPES.STAGE_SHOWDOWN) {
           this._dispatch(actions.showdown())
@@ -306,7 +317,7 @@ export default class Game {
         let playerCards = []
         let left = {}
         let right = {}
-        const hasSplit = history.some(x => x.type === TYPES.SPLIT)
+        const hasSplit = history.some((x) => x.type === TYPES.SPLIT)
         if (position === TYPES.LEFT) {
           playerCards = handInfo.left.cards.concat(card)
           left = engine.getHandInfoAfterHit(playerCards, dealerCards, initialBet, hasSplit)
@@ -321,7 +332,7 @@ export default class Game {
           right = engine.getHandInfoAfterHit(playerCards, dealerCards, initialBet, hasSplit)
           left = Object.assign({}, handInfo.left)
           if (right.close) {
-            if (history.some(x => x.type === TYPES.SPLIT)) {
+            if (history.some((x) => x.type === TYPES.SPLIT)) {
               stage = TYPES.STAGE_PLAYER_TURN_LEFT
             } else {
               stage = TYPES.STAGE_SHOWDOWN
@@ -337,15 +348,15 @@ export default class Game {
         objCards[position] = playerCards
         const historyItem = appendEpoch({
           ...action,
-          ...objCards
+          ...objCards,
         })
         this.setState({
           stage: stage,
           handInfo: { left, right },
-          deck: deck.filter(x => playerCards.indexOf(x) === -1),
+          deck: deck.filter((x) => playerCards.indexOf(x) === -1),
           cardCount: cardCount + engine.countCards(card),
           history: history.concat(historyItem),
-          hits: hits + 1
+          hits: hits + 1,
         })
         if (stage === TYPES.STAGE_SHOWDOWN) {
           this._dispatch(actions.showdown())
@@ -360,7 +371,7 @@ export default class Game {
         let playerCards: Array<card> = []
         let left = {}
         let right = {}
-        const hasSplit = history.some(x => x.type === TYPES.SPLIT)
+        const hasSplit = history.some((x) => x.type === TYPES.SPLIT)
         // TODO: remove position and replace it with stage info #hit
         if (position === TYPES.LEFT) {
           right = Object.assign({}, handInfo.right)
@@ -376,7 +387,7 @@ export default class Game {
           left = Object.assign({}, handInfo.left)
           right = engine.getHandInfoAfterDouble(playerCards, dealerCards, initialBet, hasSplit)
           if (right.close) {
-            if (history.some(x => x.type === TYPES.SPLIT)) {
+            if (history.some((x) => x.type === TYPES.SPLIT)) {
               stage = TYPES.STAGE_PLAYER_TURN_LEFT
             } else {
               stage = TYPES.STAGE_SHOWDOWN
@@ -390,15 +401,15 @@ export default class Game {
         const historyItem = appendEpoch({
           ...action,
           payload: { bet: initialBet },
-          ...objCards
+          ...objCards,
         })
         this.setState({
           stage: stage,
           handInfo: { left, right },
-          deck: deck.filter(x => playerCards.indexOf(x) === -1),
+          deck: deck.filter((x) => playerCards.indexOf(x) === -1),
           cardCount: cardCount + engine.countCards(card),
           history: history.concat(historyItem),
-          hits: hits + 1
+          hits: hits + 1,
         })
         this._dispatch(actions.stand(position))
         break
@@ -409,7 +420,7 @@ export default class Game {
         const position = action.payload.position
         let left = {}
         let right = {}
-        const hasSplit = history.some(x => x.type === TYPES.SPLIT)
+        const hasSplit = history.some((x) => x.type === TYPES.SPLIT)
         if (position === TYPES.LEFT) {
           right = Object.assign({}, handInfo.right)
           left = engine.getHandInfoAfterStand(handInfo.left)
@@ -433,7 +444,7 @@ export default class Game {
           stage,
           handInfo: { left, right },
           history: history.concat(historyItem),
-          hits: hits + 1
+          hits: hits + 1,
         })
         if (stage === TYPES.STAGE_SHOWDOWN) {
           this._dispatch(actions.showdown())
@@ -447,23 +458,23 @@ export default class Game {
         this.setState({
           stage: TYPES.STAGE_DEALER_TURN,
           history: history.concat(historyItem),
-          hits: hits + 1
+          hits: hits + 1,
         })
         // we want to include in the calculation the dealerHoleCard obtained in initial deal()
         this._dispatch(actions.dealerHit({ dealerHoleCard: dealerHoleCard }))
         if (dealerHoleCardOnly) {
           this.setState({
             stage: TYPES.STAGE_DONE,
-            ...engine.getPrizes(this.state)
+            ...engine.getPrizes(this.state),
           })
           break
         }
-        const checkLeftStatus = history.some(x => x.type === TYPES.SPLIT)
+        const checkLeftStatus = history.some((x) => x.type === TYPES.SPLIT)
         const check1 = (handInfo.right.playerHasBusted || handInfo.right.playerHasBlackjack) && !checkLeftStatus
         if (check1) {
           this.setState({
             stage: TYPES.STAGE_DONE,
-            ...engine.getPrizes(this.state)
+            ...engine.getPrizes(this.state),
           })
           break
         }
@@ -471,14 +482,14 @@ export default class Game {
         if (check2) {
           this.setState({
             stage: TYPES.STAGE_DONE,
-            ...engine.getPrizes(this.state)
+            ...engine.getPrizes(this.state),
           })
           break
         }
         if (checkLeftStatus && handInfo.left.playerHasBusted && handInfo.right.playerHasBusted) {
           this.setState({
             stage: TYPES.STAGE_DONE,
-            ...engine.getPrizes(this.state)
+            ...engine.getPrizes(this.state),
           })
           break
         }
@@ -486,7 +497,7 @@ export default class Game {
           this._dispatch(actions.dealerHit())
         }
         this.setState({
-          ...engine.getPrizes(this.state)
+          ...engine.getPrizes(this.state),
         })
         break
       }
@@ -498,7 +509,7 @@ export default class Game {
           stage: TYPES.STAGE_SHOWDOWN,
           handInfo: handInfo,
           history: history.concat(historyItem),
-          hits: hits + 1
+          hits: hits + 1,
         })
         this._dispatch(actions.showdown({ dealerHoleCardOnly: true }))
         break
@@ -508,7 +519,7 @@ export default class Game {
         // the new card for dealer can be the "dealerHoleCard" or a new card
         // dealerHoleCard was set at the deal()
         const { dealerHoleCard } = action.payload
-        const card = dealerHoleCard || deck.splice(deck.length - 1, 1)[ 0 ]
+        const card = dealerHoleCard || deck.splice(deck.length - 1, 1)[0]
         const dealerCards = this.state.dealerCards.concat([card])
         const dealerValue = engine.calculate(dealerCards)
         const dealerHasBlackjack = engine.isBlackjack(dealerCards)
@@ -525,7 +536,7 @@ export default class Game {
         }
         const historyItem = appendEpoch({
           ...action,
-          dealerCards
+          dealerCards,
         })
         this.setState({
           stage: stage,
@@ -533,10 +544,10 @@ export default class Game {
           dealerValue: dealerValue,
           dealerHasBlackjack: dealerHasBlackjack,
           dealerHasBusted: dealerHasBusted,
-          deck: deck.filter(x => dealerCards.indexOf(x) === -1),
+          deck: deck.filter((x) => dealerCards.indexOf(x) === -1),
           cardCount: cardCount + engine.countCards([card]),
           history: history.concat(historyItem),
-          hits: hits + 1
+          hits: hits + 1,
         })
         break
       }
@@ -545,7 +556,7 @@ export default class Game {
         const historyItem = appendEpoch(action)
         this.setState({
           hits: hits + 1,
-          history: history.concat(historyItem)
+          history: history.concat(historyItem),
         })
         break
       }

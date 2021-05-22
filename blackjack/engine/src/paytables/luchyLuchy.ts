@@ -18,7 +18,7 @@ export default (flatCards, suited, value) => {
   if ((value.hi === 21 || value.lo === 21) && !suited) {
     return 3
   }
-  if ((value.hi === 20 || value.lo === 20)) {
+  if (value.hi === 20 || value.lo === 20) {
     return 3
   }
   if (value.hi === 19 || value.lo === 19) {

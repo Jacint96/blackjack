@@ -23,11 +23,11 @@ import { getRules } from '../src/presets'
 import * as actions from '../src/actions'
 import Game from '../src/game'
 
-const executeFlow = (rules = {} , cards, activity) => {
+const executeFlow = (rules = {}, cards, activity) => {
   const game = new Game(null, getRules(rules))
   let status = game.getState()
   status.deck = status.deck.concat(serializeCards(cards))
-  activity.forEach(fn => {
+  activity.forEach((fn) => {
     // this is simulating the re-initialization done by an hypothetical server
     const instance = new Game(status)
     status = instance.dispatch(fn())
@@ -36,24 +36,24 @@ const executeFlow = (rules = {} , cards, activity) => {
 }
 
 const functions = {
-  'restore': () => actions.restore(),
-  'deal': () => actions.deal({bet: 10}),
-  'deal20': () => actions.deal({bet: 20}),
-  'deal-luckyLucky': () => actions.deal({bet: 10, sideBets: { luckyLucky: 10 }}),
-  'split': () => actions.split(),
-  'hitR': () => actions.hit({position: 'right'}),
-  'hitL': () => actions.hit({position: 'left'}),
-  'standR': () => actions.stand({position: 'right'}),
-  'standL': () => actions.stand({position: 'left'}),
-  'doubleR': () => actions.double({position: 'right'}),
-  'doubleL': () => actions.double({position: 'left'}),
-  'insuranceInjectAmount': () => actions.insurance({bet: 100}),
-  'insuranceYes': () => actions.insurance({bet: 1}),
-  'insurance5': () => actions.insurance({bet: 5}),
-  'insuranceNo': () => actions.insurance({bet: 0})
+  restore: () => actions.restore(),
+  deal: () => actions.deal({ bet: 10 }),
+  deal20: () => actions.deal({ bet: 20 }),
+  'deal-luckyLucky': () => actions.deal({ bet: 10, sideBets: { luckyLucky: 10 } }),
+  split: () => actions.split(),
+  hitR: () => actions.hit({ position: 'right' }),
+  hitL: () => actions.hit({ position: 'left' }),
+  standR: () => actions.stand({ position: 'right' }),
+  standL: () => actions.stand({ position: 'left' }),
+  doubleR: () => actions.double({ position: 'right' }),
+  doubleL: () => actions.double({ position: 'left' }),
+  insuranceInjectAmount: () => actions.insurance({ bet: 100 }),
+  insuranceYes: () => actions.insurance({ bet: 1 }),
+  insurance5: () => actions.insurance({ bet: 5 }),
+  insuranceNo: () => actions.insurance({ bet: 0 }),
 }
 
-const mapToActions = (actions) => actions.map(x => functions[x])
+const mapToActions = (actions) => actions.map((x) => functions[x])
 
 describe('Action validations', function () {
   describe('#deal', function () {
@@ -65,24 +65,24 @@ describe('Action validations', function () {
 })
 describe('Game flow', function () {
   describe('# Finish the game', function () {
-    [
+    ;[
       {
         cards: '♠10 ♦1 ♥5 ♣6 ♠11 ♦10',
         actions: ['restore', 'deal', 'split', 'standR'],
         stage: 'done',
-        finalWin: 0
+        finalWin: 0,
       },
       {
         cards: '♥3 ♣3 ♠2 ♦2',
         actions: ['restore', 'deal', 'split', 'standR'],
         stage: 'player-turn-left',
-        finalWin: 0
+        finalWin: 0,
       },
       {
         cards: '♣6 ♣6 ♣6 ♥3 ♣3 ♠2 ♦2',
         actions: ['restore', 'deal', 'split', 'standR', 'doubleL'],
         stage: 'done',
-        finalWin: 0
+        finalWin: 0,
       },
       {
         // force showdown after splitting ace rule ON.
@@ -92,8 +92,8 @@ describe('Game flow', function () {
         stage: 'done',
         finalWin: 0,
         rules: {
-          showdownAfterAceSplit: true
-        }
+          showdownAfterAceSplit: true,
+        },
       },
       {
         // force showdown after splitting ace rule OFF.
@@ -103,12 +103,16 @@ describe('Game flow', function () {
         stage: 'player-turn-right',
         finalWin: 0,
         rules: {
-          showdownAfterAceSplit: false
-        }
-      }
-    ].forEach(test => {
+          showdownAfterAceSplit: false,
+        },
+      },
+    ].forEach((test) => {
       it(`should deal ${test.cards} execute ${test.actions.join('-')} and finish`, function () {
-        const state = executeFlow(test.rules, test.cards, test.actions.map(x => functions[x]))
+        const state = executeFlow(
+          test.rules,
+          test.cards,
+          test.actions.map((x) => functions[x]),
+        )
         if (test.stage) {
           assert.equal(state.stage, test.stage, `${test.cards} exit stage is ${state.stage} instead of ${test.stage}`)
         }
@@ -119,31 +123,47 @@ describe('Game flow', function () {
     })
     it('should finish the game when player hits 21 (soft)', function () {
       const cards = '♠6 ♠5 ♥10 ♦10 ♦1 ♦9'
-      const actions = [ 'restore', 'deal', 'hitR', 'hitR' ]
+      const actions = ['restore', 'deal', 'hitR', 'hitR']
       const rules = {
         decks: 1,
         standOnSoft17: true,
         double: 'any',
         split: true,
         doubleAfterSplit: true,
-        showdownAfterAceSplit: true
+        showdownAfterAceSplit: true,
       }
-      const state = executeFlow(rules, cards, actions.map(x => functions[ x ]))
-      const { stage, wonOnRight, handInfo: { right } } = state
+      const state = executeFlow(
+        rules,
+        cards,
+        actions.map((x) => functions[x]),
+      )
+      const {
+        stage,
+        wonOnRight,
+        handInfo: { right },
+      } = state
       assert.equal(right.playerValue.hi, 21, 'Player has 21 on right')
       assert.equal(stage, 'done', 'game is over')
       assert.equal(wonOnRight, 10 * 2, 'Won')
     })
   })
-  describe('# insurance dealer BJ', function() {
+  describe('# insurance dealer BJ', function () {
     const test = {
       cards: '♦10 ♥1 ♦3 ♦3',
     }
     it(`INSURANCE ON: should deal ${test.cards} and wait for "insurance" YES or NO`, function () {
       const actions = ['restore', 'deal']
-      const rules = {insurance: true}
-      const state = executeFlow(rules, test.cards, actions.map(x => functions[x]))
-      const { handInfo: { right: { availableActions } } } = state
+      const rules = { insurance: true }
+      const state = executeFlow(
+        rules,
+        test.cards,
+        actions.map((x) => functions[x]),
+      )
+      const {
+        handInfo: {
+          right: { availableActions },
+        },
+      } = state
       assert.equal(state.stage, 'player-turn-right', 'blackjack but insurance is ON and first card is ♥1')
       assert.equal(state.dealerHasBlackjack, false, 'blackjack is still a secret here')
       assert.equal(availableActions.insurance, true, 'can insure')
@@ -155,25 +175,52 @@ describe('Game flow', function () {
     })
     it('should pay insurance and summary should appears in props "sideBetsInfo"', () => {
       const actions = ['restore', 'deal', 'insurance5']
-      const rules = {insurance: true}
-      const state = executeFlow(rules, '♦10 ♥1 ♦3 ♦3', actions.map(x => functions[x]))
-      const { sideBetsInfo: { insurance : { risk, win }} } = state
+      const rules = { insurance: true }
+      const state = executeFlow(
+        rules,
+        '♦10 ♥1 ♦3 ♦3',
+        actions.map((x) => functions[x]),
+      )
+      const {
+        sideBetsInfo: {
+          insurance: { risk, win },
+        },
+      } = state
       assert.equal(risk, 5, 'insurance risk value is half of 10')
       assert.equal(win, risk * 3, 'insurance win value is 10 + bet = 15')
     })
     it('should not pay insurance and summary should appears in props "sideBetsInfo"', () => {
       const actions = ['restore', 'deal', 'insurance5']
-      const rules = {insurance: true}
-      const state = executeFlow(rules, '♦3 ♥1 ♦3 ♦3', actions.map(x => functions[x]))
-      const { sideBetsInfo: { insurance : { risk, win }} } = state
+      const rules = { insurance: true }
+      const state = executeFlow(
+        rules,
+        '♦3 ♥1 ♦3 ♦3',
+        actions.map((x) => functions[x]),
+      )
+      const {
+        sideBetsInfo: {
+          insurance: { risk, win },
+        },
+      } = state
       assert.equal(risk, 5, 'insurance risk value is 5')
       assert.equal(win, 0, 'insurance win value is 0')
     })
     it(`INSURANCE ON: should deal ${test.cards}, insure YES, and finish`, function () {
       const actions = ['restore', 'deal', 'insuranceYes']
-      const rules = {insurance: true}
-      const state = executeFlow(rules, test.cards, actions.map(x => functions[x]))
-      const { finalBet, wonOnRight, handInfo: { right }, sideBetsInfo: { insurance: { win } } } = state
+      const rules = { insurance: true }
+      const state = executeFlow(
+        rules,
+        test.cards,
+        actions.map((x) => functions[x]),
+      )
+      const {
+        finalBet,
+        wonOnRight,
+        handInfo: { right },
+        sideBetsInfo: {
+          insurance: { win },
+        },
+      } = state
       assert.equal(state.stage, 'done', 'blackjack but insurance is ON and first card is ♥1')
       assert.equal(finalBet, 15, 'bet 10 and insurance 1')
       assert.equal(right.close, true, 'right hand should be close')
@@ -182,9 +229,20 @@ describe('Game flow', function () {
     })
     it(`INSURANCE ON: should deal ${test.cards}, insure YES, and finish`, function () {
       const actions = ['restore', 'deal20', 'insuranceYes']
-      const rules = {insurance: true}
-      const state = executeFlow(rules, test.cards, actions.map(x => functions[x]))
-      const { finalBet, wonOnRight, handInfo: { right }, sideBetsInfo: { insurance: { risk, win } } } = state
+      const rules = { insurance: true }
+      const state = executeFlow(
+        rules,
+        test.cards,
+        actions.map((x) => functions[x]),
+      )
+      const {
+        finalBet,
+        wonOnRight,
+        handInfo: { right },
+        sideBetsInfo: {
+          insurance: { risk, win },
+        },
+      } = state
       assert.equal(state.stage, 'done', 'blackjack but insurance is ON and first card is ♥1')
       assert.equal(finalBet, 20 + 10, 'bet 20 and insurance 10')
       assert.equal(right.close, true, 'right hand should be close')
@@ -194,18 +252,30 @@ describe('Game flow', function () {
     })
     it(`INSURANCE OFF: should deal ${test.cards} and finish`, function () {
       const actions = ['restore', 'deal']
-      const rules = {insurance: false}
-      const state = executeFlow(rules, test.cards, actions.map(x => functions[x]))
+      const rules = { insurance: false }
+      const state = executeFlow(
+        rules,
+        test.cards,
+        actions.map((x) => functions[x]),
+      )
       assert.equal(state.dealerHasBlackjack, true, 'blackjack is not a secret here')
       assert.equal(state.stage, 'done', `${test.cards} stage is ${state.stage} instead of done`)
     })
   })
-  describe('# insurance dealer no BJ', function() {
+  describe('# insurance dealer no BJ', function () {
     it(`INSURANCE ON: should deal '♦5 ♥1 ♦2 ♦2' and wait for "insurance" YES or NO`, function () {
       const actions = ['restore', 'deal']
-      const rules = {insurance: true}
-      const state = executeFlow(rules, '♦5 ♥1 ♦2 ♦2', actions.map(x => functions[x]))
-      const { handInfo: { right: { availableActions } } } = state
+      const rules = { insurance: true }
+      const state = executeFlow(
+        rules,
+        '♦5 ♥1 ♦2 ♦2',
+        actions.map((x) => functions[x]),
+      )
+      const {
+        handInfo: {
+          right: { availableActions },
+        },
+      } = state
       assert.equal(state.stage, 'player-turn-right', 'blackjack but insurance is ON and first card is ♥1')
       assert.equal(availableActions.insurance, true, 'can insure')
       assert.equal(availableActions.double, false, 'double should not be allowed')
@@ -216,21 +286,34 @@ describe('Game flow', function () {
     })
     it(`INSURANCE ON: prevent amount injection`, function () {
       const actions = ['restore', 'deal', 'insuranceInjectAmount', 'standR']
-      const rules = {insurance: true}
-      const state = executeFlow(rules, '♦5 ♥1 ♦2 ♦2', actions.map(x => functions[x]))
+      const rules = { insurance: true }
+      const state = executeFlow(
+        rules,
+        '♦5 ♥1 ♦2 ♦2',
+        actions.map((x) => functions[x]),
+      )
       const bet = 10
       const maxInsuranceAmount = bet / 2
-      const { finalBet, wonOnRight, handInfo: { right }, dealerHasBusted } = state
+      const {
+        finalBet,
+        wonOnRight,
+        handInfo: { right },
+        dealerHasBusted,
+      } = state
       assert.equal(state.stage, 'done', 'blackjack but insurance is ON and first card is ♥1')
       assert.equal(right.playerValue.hi, 4, 'player value must be 4')
-      assert.equal(finalBet, bet + (maxInsuranceAmount), `bet ${bet} and max insurance ${maxInsuranceAmount}`)
+      assert.equal(finalBet, bet + maxInsuranceAmount, `bet ${bet} and max insurance ${maxInsuranceAmount}`)
       assert.equal(right.close, true, 'right hand should be close')
       assert.equal(wonOnRight, dealerHasBusted ? bet * 2 : 0, 'insurance pays 0 when dealer has no bj')
     })
     it(`INSURANCE OFF: should deal ${'♦5 ♥1 ♦2 ♦2'} and finish`, function () {
       const actions = ['restore', 'deal']
-      const rules = {insurance: false}
-      const state = executeFlow(rules, '♦5 ♥1 ♦2 ♦2', actions.map(x => functions[x]))
+      const rules = { insurance: false }
+      const state = executeFlow(
+        rules,
+        '♦5 ♥1 ♦2 ♦2',
+        actions.map((x) => functions[x]),
+      )
       assert.equal(state.stage, 'player-turn-right', '♦5 ♥1 ♦2 ♦2')
     })
   })
@@ -245,10 +328,17 @@ describe('Game flow', function () {
       doubleAfterSplit: true,
       surrender: true,
       insurance: true,
-      showdownAfterAceSplit: true
+      showdownAfterAceSplit: true,
     }
-    const state = executeFlow(rules, cards, actions.map(x => functions[x]))
-    const { stage, handInfo: { left, right} } = state
+    const state = executeFlow(
+      rules,
+      cards,
+      actions.map((x) => functions[x]),
+    )
+    const {
+      stage,
+      handInfo: { left, right },
+    } = state
     assert.equal(stage, 'done', `split on 10 ${cards} exit stage is ${stage} instead of done`)
     assert.equal(left.close, true, 'L is close')
     assert.equal(left.playerHasBlackjack, false, 'L has 21')
@@ -265,10 +355,19 @@ describe('Game flow', function () {
       doubleAfterSplit: true,
       surrender: true,
       insurance: true,
-      showdownAfterAceSplit: true
+      showdownAfterAceSplit: true,
     }
-    const state = executeFlow(rules, cards, actions.map(x => functions[x]))
-    const { stage, handInfo: { left, right}, dealerCards, finalWin = -1 } = state
+    const state = executeFlow(
+      rules,
+      cards,
+      actions.map((x) => functions[x]),
+    )
+    const {
+      stage,
+      handInfo: { left, right },
+      dealerCards,
+      finalWin = -1,
+    } = state
     assert.equal(stage, 'done', cards, `state is ${stage}`)
     assert.equal(left.close, true, 'L is close')
     assert.equal(left.close, true, 'L is close')
@@ -277,7 +376,7 @@ describe('Game flow', function () {
     assert.equal(dealerCards.length, 2, 'dealer has 2 cards')
     assert.equal(finalWin, 0, 'player lose')
   })
-  it('no bj bonus after split', function() {
+  it('no bj bonus after split', function () {
     const cards = '♠10 ♦10 ♠10 ♦10 ♥2 ♣2 ♠1 ♦1'
     const actions = ['restore', 'deal', 'split']
     const rules = {
@@ -288,10 +387,20 @@ describe('Game flow', function () {
       doubleAfterSplit: true,
       surrender: true,
       insurance: true,
-      showdownAfterAceSplit: true
+      showdownAfterAceSplit: true,
     }
-    const state = executeFlow(rules, cards, actions.map(x => functions[x]))
-    const { stage, handInfo: { left, right}, dealerHasBusted, wonOnLeft, wonOnRight } = state
+    const state = executeFlow(
+      rules,
+      cards,
+      actions.map((x) => functions[x]),
+    )
+    const {
+      stage,
+      handInfo: { left, right },
+      dealerHasBusted,
+      wonOnLeft,
+      wonOnRight,
+    } = state
     assert.equal(stage, 'done', cards)
     assert.equal(dealerHasBusted, true, 'dealer has busted')
     assert.equal(left.close, true, 'L is close')
@@ -308,18 +417,27 @@ describe('Game flow', function () {
 describe('Must Stand on 17', function () {
   it('stand on 17', function () {
     const cards = '11d 9s 9d 4s 12h 13d 13h 11h'
-    const actions = [ 'restore', 'deal', 'split', 'standR', 'doubleL', 'standL' ]
+    const actions = ['restore', 'deal', 'split', 'standR', 'doubleL', 'standL']
     const rules = {
       decks: 1,
       standOnSoft17: true,
       double: 'any',
       split: true,
       doubleAfterSplit: true,
-      showdownAfterAceSplit: true
+      showdownAfterAceSplit: true,
     }
-    const state = executeFlow(rules, cards, actions.map(x => functions[ x ]))
-    const { stage, finalBet, wonOnRight, wonOnLeft, dealerValue,
-      handInfo: { left, right }
+    const state = executeFlow(
+      rules,
+      cards,
+      actions.map((x) => functions[x]),
+    )
+    const {
+      stage,
+      finalBet,
+      wonOnRight,
+      wonOnLeft,
+      dealerValue,
+      handInfo: { left, right },
     } = state
     assert.equal(stage, 'done', `${cards}`)
     assert.equal(finalBet, 30, 'Deal 10, Split 10, DoubleR 10')
@@ -374,8 +492,13 @@ describe('Side bets', function () {
       const cards = '9h 10h 1c 8s'
       const actions = mapToActions(['restore', 'deal-luckyLucky'])
       const state = executeFlow(rules, cards, actions)
-      const { handInfo: { right: { cards : playerCards } }, dealerCards } = state
-      const sideBetsInfo = engine.getSideBetsInfo({luckyLucky: true}, {luckyLucky: 10}, playerCards, dealerCards)
+      const {
+        handInfo: {
+          right: { cards: playerCards },
+        },
+        dealerCards,
+      } = state
+      const sideBetsInfo = engine.getSideBetsInfo({ luckyLucky: true }, { luckyLucky: 10 }, playerCards, dealerCards)
       assert.equal(sideBetsInfo.luckyLucky, 20, 'amount is positive (engine)')
       assert.equal(state.availableBets.luckyLucky, false, 'rule is OFF after deal')
       assert.equal(state.sideBetsInfo.luckyLucky, 20, 'amount is positive (game)')
@@ -387,10 +510,14 @@ describe('Showdown after aces split', () => {
   test('when showdownAfterAceSplit both sides must be closed', () => {
     const actions = ['restore', 'deal', 'split']
     const rules = {
-      showdownAfterAceSplit: true
+      showdownAfterAceSplit: true,
     }
     const bet = 10
-    const state = executeFlow(rules, '♥8 ♥8 ♥1 ♦4 ♥10 ♦1 ♦1', actions.map(x => functions[x]))
+    const state = executeFlow(
+      rules,
+      '♥8 ♥8 ♥1 ♦4 ♥10 ♦1 ♦1',
+      actions.map((x) => functions[x]),
+    )
     const { stage, initialBet, finalBet, dealerHasBusted, dealerValue, handInfo, wonOnLeft, wonOnRight } = state
     const { left, right } = handInfo
     assert.equal(stage, 'done', 'stage is done')
@@ -409,19 +536,31 @@ describe('Showdown after aces split', () => {
 describe('History detail for each action', () => {
   test('hit should have side cards', () => {
     const cards = '♠6 ♠5 ♥10 ♦10 ♦1 ♦9'
-    const actions = [ 'restore', 'deal', 'hitR', 'hitR' ]
+    const actions = ['restore', 'deal', 'hitR', 'hitR']
     const rules = {}
-    const state = executeFlow(rules, cards, actions.map(x => functions[ x ]))
-    const { history: [ restore, deal, firstHit, secondHit ] } = state
+    const state = executeFlow(
+      rules,
+      cards,
+      actions.map((x) => functions[x]),
+    )
+    const {
+      history: [restore, deal, firstHit, secondHit],
+    } = state
     assert.ok(firstHit.right.length === 3, 'HIT action has 3 cards')
     assert.ok(secondHit.right.length === 4, 'HIT action has 3 cards')
   })
   test('double should have side cards', () => {
     const cards = '♠6 ♠5 ♥10 ♦10 ♦1 ♦9'
-    const actions = [ 'restore', 'deal', 'doubleR' ]
+    const actions = ['restore', 'deal', 'doubleR']
     const rules = {}
-    const state = executeFlow(rules, cards, actions.map(x => functions[ x ]))
-    const { history: [ restore, deal, double ] } = state
+    const state = executeFlow(
+      rules,
+      cards,
+      actions.map((x) => functions[x]),
+    )
+    const {
+      history: [restore, deal, double],
+    } = state
     assert.ok(deal.right.length === 2, '2 cards on right after deal')
     assert.ok(double.right.length === 3, '3 cards on right after double')
   })
@@ -430,18 +569,28 @@ describe('History detail for each action', () => {
 describe('No matter how many aces ... soft hands do not busts', () => {
   it('should not bust when "lo" is still under 22', () => {
     const cards = '♥5 ♣1 ♥4 ♣9 ♠1 ♦5'
-    const actions = [ 'restore', 'deal', 'hitR', 'hitR' ]
+    const actions = ['restore', 'deal', 'hitR', 'hitR']
     const rules = {
       decks: 1,
       standOnSoft17: true,
       double: 'any',
       split: true,
       doubleAfterSplit: true,
-      showdownAfterAceSplit: true
+      showdownAfterAceSplit: true,
     }
-    const state = executeFlow(rules, cards, actions.map(x => functions[ x ]))
-    const { handInfo: { right }} = state
-    const { playerValue: { hi, lo }, playerHasBusted, close } = right
+    const state = executeFlow(
+      rules,
+      cards,
+      actions.map((x) => functions[x]),
+    )
+    const {
+      handInfo: { right },
+    } = state
+    const {
+      playerValue: { hi, lo },
+      playerHasBusted,
+      close,
+    } = right
     assert.equal(lo, 12)
     assert.equal(hi, 12)
     assert.equal(playerHasBusted, false, 'Player should be 12 not 22')
@@ -449,18 +598,29 @@ describe('No matter how many aces ... soft hands do not busts', () => {
   })
   it('should pay on handValue.lo', () => {
     const cards = '♥8 ♥5 ♣1 ♥4 ♣9 ♠1 ♦5'
-    const actions = [ 'restore', 'deal', 'hitR', 'hitR', 'standR' ]
+    const actions = ['restore', 'deal', 'hitR', 'hitR', 'standR']
     const rules = {
       decks: 1,
       standOnSoft17: true,
       double: 'any',
       split: true,
       doubleAfterSplit: true,
-      showdownAfterAceSplit: true
+      showdownAfterAceSplit: true,
     }
-    const state = executeFlow(rules, cards, actions.map(x => functions[ x ]))
-    const { handInfo: { right }, dealerValue, wonOnRight } = state
-    const { playerValue: { hi, lo }, playerHasBusted } = right
+    const state = executeFlow(
+      rules,
+      cards,
+      actions.map((x) => functions[x]),
+    )
+    const {
+      handInfo: { right },
+      dealerValue,
+      wonOnRight,
+    } = state
+    const {
+      playerValue: { hi, lo },
+      playerHasBusted,
+    } = right
     assert.equal(lo, 12)
     assert.equal(hi, 12)
     assert.equal(dealerValue.lo, 21, 'dealer has 21 on lo')

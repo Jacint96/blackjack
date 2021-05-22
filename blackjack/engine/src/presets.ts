@@ -20,14 +20,14 @@ import * as TYPES from './constants'
 import { shuffle, newDecks } from '52-deck'
 import type { SideBets, Rule, State } from './types'
 
-export const getDefaultSideBets = (active: boolean = false) : SideBets => {
+export const getDefaultSideBets = (active = false): SideBets => {
   return {
     luckyLucky: active,
     perfectPairs: active,
     royalMatch: active,
     luckyLadies: active,
     inBet: active,
-    MatchTheDealer: active
+    MatchTheDealer: active,
   }
 }
 
@@ -39,7 +39,7 @@ export const getRules = ({
   doubleAfterSplit = true,
   surrender = true,
   insurance = true,
-  showdownAfterAceSplit = true
+  showdownAfterAceSplit = true,
 }: Rule) => {
   return {
     decks: decks || 1,
@@ -49,11 +49,11 @@ export const getRules = ({
     doubleAfterSplit: doubleAfterSplit,
     surrender: surrender,
     insurance: insurance,
-    showdownAfterAceSplit: showdownAfterAceSplit
+    showdownAfterAceSplit: showdownAfterAceSplit,
   }
 }
 
-export const defaultState = (rules: Rule) : State => {
+export const defaultState = (rules: Rule): State => {
   return {
     hits: 0,
     initialBet: 0,
@@ -65,7 +65,7 @@ export const defaultState = (rules: Rule) : State => {
     deck: shuffle(newDecks(rules.decks)),
     handInfo: {
       left: {},
-      right: {}
+      right: {},
     },
     history: [],
     availableBets: getDefaultSideBets(true),
@@ -74,6 +74,6 @@ export const defaultState = (rules: Rule) : State => {
     dealerHoleCard: null,
     dealerHasBlackjack: false,
     dealerHasBusted: false,
-    dealerCards: []
+    dealerCards: [],
   }
 }
