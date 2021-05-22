@@ -4,8 +4,8 @@
   "description": "NodeJs, single player, blackjack engine",
   "main": "dist/index.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "cross-env ENVIRONMENT=development nodemon --exec \"ts-node src/index.ts\"",
+    "start": "cross-env ENVIRONMENT=production node dist/index.js",
+    "dev": "cross-env ENVIRONMENT=development nodemon",
     "build": "rimraf dist && tsc",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
