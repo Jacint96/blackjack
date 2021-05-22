@@ -20,6 +20,8 @@
 import * as TYPES from './constants'
 import type { Action, Card } from './types'
 
+// TODO: Fix ts ignores
+
 export const invalid = (action: Action, info: any): Action => {
   return {
     type: TYPES.INVALID,
@@ -37,6 +39,7 @@ export const restore = (): Action => {
   }
 }
 
+// @ts-ignore
 export const deal = ({ bet = 10, sideBets = { luckyLucky: 0 } }: { bet: number; sideBets: any } = {}): Action => {
   return {
     type: TYPES.DEAL,
@@ -95,6 +98,7 @@ export const surrender = (): Action => {
   }
 }
 
+// @ts-ignore
 export const showdown = ({ dealerHoleCardOnly = false }: { dealerHoleCardOnly: boolean } = {}): Action => {
   return {
     type: TYPES.SHOWDOWN,
@@ -104,6 +108,7 @@ export const showdown = ({ dealerHoleCardOnly = false }: { dealerHoleCardOnly: b
   }
 }
 
+// @ts-ignore
 export const dealerHit = ({ dealerHoleCard }: { dealerHoleCard: Card } = {}): Action => {
   return {
     type: TYPES.DEALER_HIT,

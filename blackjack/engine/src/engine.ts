@@ -30,7 +30,8 @@ export const isNullOrUndef = (obj: any): boolean => isUndefined(obj) || isNull(o
 export const calculate = (array: Array<Card>): HandValue => {
   if (array.length === 1) {
     if (isNullOrUndef(array[0])) {
-      return null
+      // TODO: check...
+      return {} as HandValue
     }
     const value = array[0].value
     return {
@@ -38,7 +39,7 @@ export const calculate = (array: Array<Card>): HandValue => {
       lo: value === 1 ? 1 : value,
     }
   }
-  const aces = []
+  const aces: any[] = []
   const value = array.reduce((memo, x) => {
     if (x.value === 1) {
       aces.push(1)
@@ -102,12 +103,11 @@ export const countCards = (array: Array<Card>) => {
   }, 0)
 }
 
-export const getHandInfo = (playerCards: Array<Card>, dealerCards: Array<Card>, hasSplit = false): Partial<Hand> => {
+export const getHandInfo = (playerCards: Array<Card>, dealerCards: Array<Card>, hasSplit = false): Hand => {
   const handValue = calculate(playerCards)
-  if (!handValue) {
-    return null
-  }
-  const hasBlackjack = isBlackjack(playerCards) && hasSplit === false
+  if (!handValue) return {} as Hand
+
+  const hasBlackjack = isBlackjack(playerCards) && !hasSplit
   const hasBusted = checkForBusted(handValue)
   const isClosed = hasBusted || hasBlackjack || handValue.hi === 21
   const canDoubleDown = !isClosed && true
@@ -128,14 +128,10 @@ export const getHandInfo = (playerCards: Array<Card>, dealerCards: Array<Card>, 
       stand: !isClosed,
       surrender: !isClosed,
     },
-  }
+  } as Hand
 }
 
-export const getHandInfoAfterDeal = (
-  playerCards: Array<Card>,
-  dealerCards: Array<Card>,
-  initialBet: number,
-): Partial<Hand> => {
+export const getHandInfoAfterDeal = (playerCards: Array<Card>, dealerCards: Array<Card>, initialBet: number): Hand => {
   const hand = getHandInfo(playerCards, dealerCards)
   hand.bet = initialBet
   // After deal, even if we got a blackjack the hand cannot be considered closed.
@@ -145,18 +141,18 @@ export const getHandInfoAfterDeal = (
     stand: true,
     hit: true,
     surrender: true,
+    double: !!availableActions?.double,
+    split: !!availableActions?.split,
+    insurance: !!availableActions?.insurance,
   }
   return {
     ...hand,
-    close: hand.playerHasBlackjack,
+    close: !!hand.playerHasBlackjack,
+    cards: hand.cards ?? [],
   }
 }
 
-export const getHandInfoAfterSplit = (
-  playerCards: Array<Card>,
-  dealerCards: Array<Card>,
-  initialBet: number,
-): Partial<Hand> => {
+export const getHandInfoAfterSplit = (playerCards: Array<Card>, dealerCards: Array<Card>, initialBet: number): Hand => {
   const hand = getHandInfo(playerCards, dealerCards, true)
   const availableActions = hand.availableActions
   hand.availableActions = {
@@ -165,9 +161,13 @@ export const getHandInfoAfterSplit = (
     double: !hand.close && playerCards.length === 2,
     insurance: false,
     surrender: false,
+    hit: !!availableActions?.hit,
+    stand: !!availableActions?.stand,
   }
   hand.bet = initialBet
-  return hand
+  hand.cards = hand.cards ?? []
+
+  return hand as Hand
 }
 
 export const getHandInfoAfterHit = (
@@ -175,7 +175,7 @@ export const getHandInfoAfterHit = (
   dealerCards: Array<Card>,
   initialBet: number,
   hasSplit: boolean,
-): Partial<Hand> => {
+): Hand => {
   const hand = getHandInfo(playerCards, dealerCards, hasSplit)
   const availableActions = hand.availableActions
   hand.availableActions = {
@@ -184,9 +184,12 @@ export const getHandInfoAfterHit = (
     split: false,
     insurance: false,
     surrender: false,
+    hit: !!availableActions?.hit,
+    stand: !!availableActions?.stand,
   }
   hand.bet = initialBet
-  return hand
+
+  return hand as Hand
 }
 
 export const getHandInfoAfterDouble = (
@@ -194,13 +197,17 @@ export const getHandInfoAfterDouble = (
   dealerCards: Array<Card>,
   initialBet: number,
   hasSplit: boolean,
-): Partial<Hand> => {
+): Hand => {
   const hand = getHandInfoAfterHit(playerCards, dealerCards, initialBet, hasSplit)
   const availableActions = hand.availableActions
   hand.availableActions = {
     ...availableActions,
     hit: false,
     stand: false,
+    insurance: !!availableActions?.insurance,
+    split: !!availableActions?.split,
+    double: !!availableActions?.double,
+    surrender: !!availableActions?.surrender,
   }
   hand.bet = initialBet * 2
   return {
@@ -233,7 +240,7 @@ export const getHandInfoAfterSurrender = (handInfo: Hand): Hand => {
   }
 }
 
-export const getHandInfoAfterInsurance = (playerCards: Array<Card>, dealerCards: Array<Card>): Partial<Hand> => {
+export const getHandInfoAfterInsurance = (playerCards: Array<Card>, dealerCards: Array<Card>): Hand => {
   const hand = getHandInfo(playerCards, dealerCards)
   const availableActions = hand.availableActions
   hand.availableActions = {
@@ -242,6 +249,8 @@ export const getHandInfoAfterInsurance = (playerCards: Array<Card>, dealerCards:
     hit: true,
     surrender: true,
     insurance: false,
+    split: !!availableActions?.split,
+    double: !!availableActions?.double,
   }
   return {
     ...hand,
@@ -259,7 +268,7 @@ export const isLuckyLucky = (playerCards: Array<Card>, dealerCards: Array<Card>)
 }
 
 export const getLuckyLuckyMultiplier = (playerCards: Array<Card>, dealerCards: Array<Card>) => {
-  const cards = [].concat(playerCards, dealerCards)
+  const cards: Card[] = playerCards.concat(dealerCards)
   const isSameSuite = isSuited(cards)
   const flatCards = cards.map((x) => x.value).join('')
   const value = calculate(cards)

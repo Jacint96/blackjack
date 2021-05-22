@@ -17,7 +17,7 @@
  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 import * as TYPES from './constants'
-import { shuffle, newDecks } from '52-deck'
+const { shuffle, newDecks } = require('52-deck')
 import type { SideBets, Rule, State } from './types'
 
 export const getDefaultSideBets = (active = false): SideBets => {
@@ -71,7 +71,7 @@ export const defaultState = (rules: Rule): Partial<State> => {
     availableBets: getDefaultSideBets(true),
     sideBetsInfo: {},
     rules: rules,
-    dealerHoleCard: null,
+    dealerHoleCard: void 0,
     dealerHasBlackjack: false,
     dealerHasBusted: false,
     dealerCards: [],

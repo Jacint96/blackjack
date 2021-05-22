@@ -81,3 +81,5 @@ export type State = {
   dealerValue: HandValue
   cardCount: number
 }
+
+export type StringIndexable = { [K: string]: any }
