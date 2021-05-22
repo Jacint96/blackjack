@@ -21,11 +21,11 @@ import luckyLucky from './paytables/luchyLuchy'
 import * as TYPES from './constants'
 import type { SideBets, Card, Hand, HandInfo, HandValue } from './types'
 
-export const isNull = (obj: ?any): boolean => obj === null
+export const isNull = (obj: any): boolean => obj === null
 
-export const isUndefined = (obj: ?any): boolean => obj === undefined
+export const isUndefined = (obj: any): boolean => obj === undefined
 
-export const isNullOrUndef = (obj: ?any): boolean => isUndefined(obj) || isNull(obj)
+export const isNullOrUndef = (obj: any): boolean => isUndefined(obj) || isNull(obj)
 
 export const calculate = (array: Array<Card>): HandValue => {
   if (array.length === 1) {
@@ -102,7 +102,7 @@ export const countCards = (array: Array<Card>) => {
   }, 0)
 }
 
-export const getHandInfo = (playerCards: Array<Card>, dealerCards: Array<Card>, hasSplit = false): Hand => {
+export const getHandInfo = (playerCards: Array<Card>, dealerCards: Array<Card>, hasSplit = false): Partial<Hand> => {
   const handValue = calculate(playerCards)
   if (!handValue) {
     return null
@@ -131,7 +131,11 @@ export const getHandInfo = (playerCards: Array<Card>, dealerCards: Array<Card>, 
   }
 }
 
-export const getHandInfoAfterDeal = (playerCards: Array<Card>, dealerCards: Array<Card>, initialBet: number): Hand => {
+export const getHandInfoAfterDeal = (
+  playerCards: Array<Card>,
+  dealerCards: Array<Card>,
+  initialBet: number,
+): Partial<Hand> => {
   const hand = getHandInfo(playerCards, dealerCards)
   hand.bet = initialBet
   // After deal, even if we got a blackjack the hand cannot be considered closed.
@@ -148,7 +152,11 @@ export const getHandInfoAfterDeal = (playerCards: Array<Card>, dealerCards: Arra
   }
 }
 
-export const getHandInfoAfterSplit = (playerCards: Array<Card>, dealerCards: Array<Card>, initialBet: number): Hand => {
+export const getHandInfoAfterSplit = (
+  playerCards: Array<Card>,
+  dealerCards: Array<Card>,
+  initialBet: number,
+): Partial<Hand> => {
   const hand = getHandInfo(playerCards, dealerCards, true)
   const availableActions = hand.availableActions
   hand.availableActions = {
@@ -167,7 +175,7 @@ export const getHandInfoAfterHit = (
   dealerCards: Array<Card>,
   initialBet: number,
   hasSplit: boolean,
-): Hand => {
+): Partial<Hand> => {
   const hand = getHandInfo(playerCards, dealerCards, hasSplit)
   const availableActions = hand.availableActions
   hand.availableActions = {
@@ -186,7 +194,7 @@ export const getHandInfoAfterDouble = (
   dealerCards: Array<Card>,
   initialBet: number,
   hasSplit: boolean,
-): Hand => {
+): Partial<Hand> => {
   const hand = getHandInfoAfterHit(playerCards, dealerCards, initialBet, hasSplit)
   const availableActions = hand.availableActions
   hand.availableActions = {
@@ -225,7 +233,7 @@ export const getHandInfoAfterSurrender = (handInfo: Hand): Hand => {
   }
 }
 
-export const getHandInfoAfterInsurance = (playerCards: Array<Card>, dealerCards: Array<Card>): Hand => {
+export const getHandInfoAfterInsurance = (playerCards: Array<Card>, dealerCards: Array<Card>): Partial<Hand> => {
   const hand = getHandInfo(playerCards, dealerCards)
   const availableActions = hand.availableActions
   hand.availableActions = {
@@ -272,12 +280,14 @@ export const getSideBetsInfo = (
   }
   if (availableBets.luckyLucky && sideBets.luckyLucky && isLuckyLucky(playerCards, dealerCards)) {
     const multiplier = getLuckyLuckyMultiplier(playerCards, dealerCards)
-    sideBetsInfo.luckyLucky = sideBets.luckyLucky * multiplier
+    // TODO: Check this, this seems invalid, luckyLucky doesnt type match
+    sideBetsInfo.luckyLucky = (sideBets.luckyLucky as any as number) * multiplier
   }
   if (availableBets.perfectPairs && sideBets.perfectPairs && isPerfectPairs(playerCards)) {
     // TODO: impl colored pairs
     // TODO: impl mixed pairs
-    sideBetsInfo.perfectPairs = sideBets.perfectPairs * 5
+    // TODO: Check this, this seems invalid, perfectParis doesnt type match
+    sideBetsInfo.perfectPairs = (sideBets.perfectPairs as any as number) * 5
   }
   return sideBetsInfo
 }
@@ -337,7 +347,7 @@ export const getPrize = (playerHand: Hand, dealerCards: Array<Card>): number => 
   if (dealerHasBusted) {
     return bet + bet
   }
-  const higherValidPlayerValue = getHigherValidValue(playerValue)
+  const higherValidPlayerValue = getHigherValidValue(playerValue as HandValue)
   if (higherValidPlayerValue > higherValidDealerValue) {
     return bet + bet
   } else if (higherValidPlayerValue === higherValidDealerValue) {
@@ -359,8 +369,8 @@ export const getPrizes = ({
     memo += x.value
     return memo
   }, 0)
-  const wonOnRight = getPrize(right, dealerCards)
-  const wonOnLeft = getPrize(left, dealerCards)
+  const wonOnRight = getPrize(right as Hand, dealerCards)
+  const wonOnLeft = getPrize(left as Hand, dealerCards)
   return {
     finalBet: finalBet,
     wonOnRight: wonOnRight,

@@ -53,7 +53,7 @@ export const getRules = ({
   }
 }
 
-export const defaultState = (rules: Rule): State => {
+export const defaultState = (rules: Rule): Partial<State> => {
   return {
     hits: 0,
     initialBet: 0,
