@@ -7,7 +7,7 @@ const config = require('../config.json')
 
 const dbHost = process.env.DOCKER ? 'blackjack-mongo:27018' : 'localhost'
 mongoose.connect(`mongodb://${dbHost}/Blackjack`, {
-  useNewUrlParser: true
+  useNewUrlParser: true,
 })
 
 module.exports = {
@@ -20,17 +20,14 @@ module.exports = {
           if (!doc) {
             bcrypt.hash(req.body.password, 10, (err, hash) => {
               if (!err) {
-                const token = jwt.sign(
-                  { email: req.body.email, created: created },
-                  config.userJwtSecret
-                )
+                const token = jwt.sign({ email: req.body.email, created: created }, config.userJwtSecret)
                 const newUser = new User({
                   created: created,
                   name: req.body.name,
                   email: req.body.email,
                   password: hash,
                   balance: 10000,
-                  token: token
+                  token: token,
                 })
 
                 newUser.save((err, doc) => {
@@ -38,7 +35,7 @@ module.exports = {
                     res.send({
                       token: doc.token,
                       uid: doc._id,
-                      email: doc.email
+                      email: doc.email,
                     })
                   } else {
                     // mongoose save error
@@ -76,7 +73,7 @@ module.exports = {
                   res.send({
                     token: doc.token,
                     uid: doc._id,
-                    email: doc.email
+                    email: doc.email,
                   })
                 } else {
                   // incorrect password
@@ -110,7 +107,7 @@ module.exports = {
             bcrypt.compare(req.body.password, doc.password, (err, matches) => {
               if (!err) {
                 if (matches) {
-                  User.deleteOne({ email: req.body.email }, err => {
+                  User.deleteOne({ email: req.body.email }, (err) => {
                     if (!err) {
                       res.sendStatus(200)
                     } else {
@@ -152,23 +149,19 @@ module.exports = {
                 if (matches) {
                   bcrypt.hash(req.body.newPassword, 10, (err, hash) => {
                     if (!err) {
-                      User.findOneAndUpdate(
-                        { email: req.email },
-                        { $set: { password: hash } },
-                        (err, doc) => {
-                          if (!err) {
-                            if (doc) {
-                              res.sendStatus(200)
-                            } else {
-                              // user not found
-                              res.sendStatus(404)
-                            }
+                      User.findOneAndUpdate({ email: req.email }, { $set: { password: hash } }, (err, doc) => {
+                        if (!err) {
+                          if (doc) {
+                            res.sendStatus(200)
                           } else {
-                            // mongoose update error
-                            res.sendStatus(500)
+                            // user not found
+                            res.sendStatus(404)
                           }
+                        } else {
+                          // mongoose update error
+                          res.sendStatus(500)
                         }
-                      )
+                      })
                     } else {
                       // bcrypt error
                       res.sendStatus(500)
@@ -203,18 +196,14 @@ module.exports = {
       User.findOne({ email: req.body.email }, (err, doc) => {
         if (!err) {
           if (doc) {
-            const c = crypto.createCipheriv(
-              'aes-256-cbc',
-              config.cipherKey,
-              config.cipherIv
-            )
+            const c = crypto.createCipheriv('aes-256-cbc', config.cipherKey, config.cipherIv)
             let token = c.update(
               JSON.stringify({
                 email: req.body.email,
-                timestamp: new Date().getTime()
+                timestamp: new Date().getTime(),
               }),
               'utf8',
-              'hex'
+              'hex',
             )
             token += c.final('hex')
 
@@ -236,11 +225,7 @@ module.exports = {
 
   verifyPasswordResetToken: (req, res) => {
     if (req.body.token) {
-      const d = crypto.createDecipheriv(
-        'aes-256-cbc',
-        config.cipherKey,
-        config.cipherIv
-      )
+      const d = crypto.createDecipheriv('aes-256-cbc', config.cipherKey, config.cipherIv)
       let decrypted
 
       try {
@@ -270,11 +255,7 @@ module.exports = {
 
   resetPassword: (req, res) => {
     if (req.body.email && req.body.newPassword && req.body.token) {
-      const d = crypto.createDecipheriv(
-        'aes-256-cbc',
-        config.cipherKey,
-        config.cipherIv
-      )
+      const d = crypto.createDecipheriv('aes-256-cbc', config.cipherKey, config.cipherIv)
       let decrypted
 
       try {
@@ -289,18 +270,14 @@ module.exports = {
         if (hours < 24 && decrypted.email === req.body.email) {
           bcrypt.hash(req.body.newPassword, 10, (err, hash) => {
             if (!err) {
-              User.findOneAndUpdate(
-                { email: req.body.email },
-                { $set: { password: hash } },
-                (err, doc) => {
-                  if (!err && doc) {
-                    res.sendStatus(200)
-                  } else {
-                    // mongoose error
-                    res.sendStatus(500)
-                  }
+              User.findOneAndUpdate({ email: req.body.email }, { $set: { password: hash } }, (err, doc) => {
+                if (!err && doc) {
+                  res.sendStatus(200)
+                } else {
+                  // mongoose error
+                  res.sendStatus(500)
                 }
-              )
+              })
             } else {
               // bcrypt error
               res.sendStatus(500)
@@ -335,21 +312,16 @@ module.exports = {
   },
 
   topup: (req, res) => {
-    User.findOneAndUpdate(
-      { email: req.email },
-      { $inc: { balance: 10000 } },
-      { new: true },
-      (err, doc) => {
-        if (!err) {
-          if (doc) {
-            res.send({ balance: doc.balance })
-          } else {
-            res.sendStatus(404)
-          }
+    User.findOneAndUpdate({ email: req.email }, { $inc: { balance: 10000 } }, { new: true }, (err, doc) => {
+      if (!err) {
+        if (doc) {
+          res.send({ balance: doc.balance })
         } else {
-          res.sendStatus(500)
+          res.sendStatus(404)
         }
+      } else {
+        res.sendStatus(500)
       }
-    )
-  }
+    })
+  },
 }

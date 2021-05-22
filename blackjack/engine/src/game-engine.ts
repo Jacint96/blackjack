@@ -1,4 +1,3 @@
-// @flow
 /*!
  * engine-blackjack
  * Copyright(c) 2016 Marco Casula

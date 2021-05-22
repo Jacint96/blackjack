@@ -2,9 +2,9 @@
   "name": "engine-blackjack",
   "version": "0.9.2",
   "description": "NodeJs, single player, blackjack engine",
-  "main": "dist/index.js",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "cross-env ENVIRONMENT=production node dist/index.js",
+    "start": "cross-env ENVIRONMENT=production node dist/server.js",
     "dev": "cross-env ENVIRONMENT=development nodemon",
     "build": "rimraf dist && tsc",
     "lint": "eslint .",
@@ -29,6 +29,10 @@
   "author": "Marco Casula <marco.casula@linux.com>",
   "license": "GPL-2.0",
   "devDependencies": {
+    "@types/body-parser": "^1.19.0",
+    "@types/cors": "^2.8.10",
+    "@types/express": "^4.17.11",
+    "@types/mongoose": "^5.10.5",
     "@types/node": "^15.6.0",
     "@typescript-eslint/eslint-plugin": "^4.24.0",
     "@typescript-eslint/parser": "^4.24.0",
@@ -45,6 +49,15 @@
   },
   "dependencies": {
     "52-deck": "^1.0.0",
-    "dotenv": "^10.0.0"
+    "bcrypt": "^5.0.1",
+    "body-parser": "^1.19.0",
+    "chalk": "^4.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.12.10",
+    "morgan": "^1.10.0",
+    "redis": "^3.1.2"
   }
 }

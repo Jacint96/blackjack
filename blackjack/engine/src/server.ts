@@ -1,16 +1,19 @@
-const express = require('express')
-const app = express()
-const routes = require('./routes')
+import cors from 'cors'
+import chalk from 'chalk'
+import express from 'express'
+import bodyParser from 'body-parser'
+
+// const express = require('express')
+const routes = require('./api/routes')
 const morgan = require('morgan')
-const chalk = require('chalk')
-const bodyParser = require('body-parser')
-const cors = require('cors')
+
+const app = express()
 
 app.use(cors())
 app.use(bodyParser.json())
 
 // Request logging
-const colorizeStatus = status => {
+const colorizeStatus = (status: string) => {
   if (status) {
     if (status.startsWith('2')) {
       return chalk.green(status)
@@ -25,15 +28,17 @@ const colorizeStatus = status => {
 }
 
 app.use(
+  // TODO: later
+  // @ts-ignore
   morgan((tokens, req, res) => {
     return [
       chalk.grey(new Date().toISOString()),
       chalk.yellow(tokens.method(req, res)),
       tokens.url(req, res),
       colorizeStatus(tokens.status(req, res)),
-      `(${tokens['response-time'](req, res)} ms)`
+      `(${tokens['response-time'](req, res)} ms)`,
     ].join(' ')
-  })
+  }),
 )
 
 // API routes

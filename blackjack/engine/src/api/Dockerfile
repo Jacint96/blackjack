@@ -1,3 +1,5 @@
+# Ezt majd később megbeszéljük, egyelőre ne fusson dockerből az api, sőt nem is kell egyáltalán h ebből fusson!
+
 FROM node:12
 ENV DOCKER=true
 WORKDIR /usr/src/api
