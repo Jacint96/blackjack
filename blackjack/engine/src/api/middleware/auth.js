@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken')
-const mongooseMiddleware = require('../middleware/mongoose.js')
+const mongoose = require('../db-handler/mongoose.js')
 const config = require('../config.json')
 const User = require('../schema/user')
 
-mongooseMiddleware()
+mongoose()
 
 module.exports = (req, res, next) => {
   if (req.headers.authorization) {

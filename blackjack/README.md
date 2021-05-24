@@ -22,7 +22,3 @@ The game logic is powered by the amazing [engine-blackjack](https://github.com/k
 ### Deployment
 
 Currently, the project is set up to have the front-end deployed on [Now](https://now.sh) and the back-end deployed on any platform that will build and run Docker containers.
-
-### License
-
-GPLv3.0. See LICENSE.
