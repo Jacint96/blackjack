@@ -154,7 +154,8 @@ class Blackjack extends React.PureComponent {
 
   playAgain() {
     this.setState({
-      gameState: null
+      gameState: null,
+      availableBalance: this.state.balance,
     })
   }
 

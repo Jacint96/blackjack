@@ -13,13 +13,12 @@ services:
     image: redis
     ports:
       - '6379:6379'
-  api:
-    container_name: blackjack-api
-    build: engine/api
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: rediscommander/redis-commander:latest
     restart: always
+    environment:
+    - REDIS_HOSTS=local:redis:6379
     ports:
-      - '6001:6001'
-    depends_on:
-      - mongo
-      - redis
-    command: ['./wait-for-it.sh', 'mongo:27018', '--', 'npm', 'start']
+    - "8081:8081"

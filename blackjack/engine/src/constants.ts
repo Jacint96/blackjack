@@ -1,10 +1,3 @@
-// @flow
-/*!
- * engine-blackjack
- * Copyright(c) 2016 Marco Casula
- * GPL 2.0 Licensed
- */
-
 export const INVALID = 'INVALID'
 export const RESTORE = 'RESTORE'
 export const DEAL = 'DEAL'

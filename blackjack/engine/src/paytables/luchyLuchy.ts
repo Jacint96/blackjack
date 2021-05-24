@@ -1,4 +1,3 @@
-// TODO: give types
 export default (flatCards: any, suited: any, value: any) => {
   const key = `${flatCards}${suited ? 's' : ''}`
   if (key === '777s') {

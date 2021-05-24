@@ -1,14 +1,11 @@
-const mongoose = require('mongoose')
+const mongooseMiddleware = require('../middleware/mongoose.js')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const User = require('../schema/user')
 const config = require('../config.json')
 
-const dbHost = process.env.DOCKER ? 'blackjack-mongo:27018' : 'localhost'
-mongoose.connect(`mongodb://${dbHost}/Blackjack`, {
-  useNewUrlParser: true,
-})
+mongooseMiddleware()
 
 module.exports = {
   register: (req, res) => {

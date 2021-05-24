@@ -17,8 +17,8 @@
  */
 
 const assert = require('assert')
-import { serializeCards } from '52-deck'
-import * as lib from '../src/engine'
+const serializeCards = require('52-deck')
+const lib = require('../src/engine')
 
 describe('calculate()', function () {
   it('should return hi/lo value when cards contains "Ace"', function () {

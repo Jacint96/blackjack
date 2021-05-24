@@ -1,14 +1,10 @@
 const { Game, actions, presets } = require('../../game-engine')
 
-const mongoose = require('mongoose')
 const redis = require('redis')
 const User = require('../schema/user')
+const mongooseMiddleware = require('../middleware/mongoose.js')
 
-const dbHost = process.env.DOCKER ? 'blackjack-mongo:27018' : 'localhost'
-mongoose
-  .connect(`mongodb://${dbHost}/Blackjack`, {
-    useNewUrlParser: true,
-  })
+mongooseMiddleware()
   .then(() => {
     console.info('Db connected!')
   })

@@ -1,12 +1,9 @@
 const jwt = require('jsonwebtoken')
-const mongoose = require('mongoose')
+const mongooseMiddleware = require('../middleware/mongoose.js')
 const config = require('../config.json')
 const User = require('../schema/user')
 
-const dbHost = process.env.DOCKER ? 'blackjack-mongo:27018' : 'localhost'
-mongoose.connect(`mongodb://${dbHost}/Blackjack`, {
-  useNewUrlParser: true,
-})
+mongooseMiddleware()
 
 module.exports = (req, res, next) => {
   if (req.headers.authorization) {

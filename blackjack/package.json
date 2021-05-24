@@ -2,9 +2,8 @@
   "name": "Blackjack",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "https://github.com/tdjsnelling/Blackjack.git",
-  "author": "Tom Snelling",
-  "license": "GPL-3.0-or-later",
+  "author": "Jacint Korolovych",
+  "license": "UNLICENSED",
   "devDependencies": {
     "eslint": "^6.2.0",
     "eslint-config-prettier": "^6.1.0",
