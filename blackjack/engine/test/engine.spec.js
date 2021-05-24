@@ -16,16 +16,16 @@
  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-const assert = require('assert')
-const serializeCards = require('52-deck')
+const { serializeCards } = require('52-deck') // TODO: import serializeCards like this in the other tests too!
 const lib = require('../src/engine')
 
 describe('calculate()', function () {
   it('should return hi/lo value when cards contains "Ace"', function () {
     const cards = serializeCards('♠1 ♥5')
     const values = lib.calculate(cards)
-    assert.equal(values.hi, 16, 'hi')
-    assert.equal(values.lo, 6, 'lo')
+    // TODO: update tests to use expect like this:
+    expect(values.hi).eqWithMsg(16, 'hi') //  assert.equal(values.hi, 16, 'hi')
+    expect(values.hi).eqWithMsg(6, 'lo') // assert.equal(values.lo, 6, 'lo')
   })
 
   it('should return hi/lo value when cards contains 2 "Aces"', function () {
