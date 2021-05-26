@@ -1,11 +1,8 @@
-const mongoose = require('../db-handler/mongoose.js')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const User = require('../schema/user')
 const config = require('../config.json')
-
-mongoose()
 
 module.exports = {
   register: (req, res) => {

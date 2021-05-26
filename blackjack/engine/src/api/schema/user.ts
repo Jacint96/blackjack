@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const userSchema = new mongoose.Schema({
   created: Number,
@@ -9,4 +9,4 @@ const userSchema = new mongoose.Schema({
   token: String,
 })
 
-module.exports = mongoose.model('user', userSchema)
+export default mongoose.model('user', userSchema)
