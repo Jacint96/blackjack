@@ -4,7 +4,7 @@
   "description": "NodeJs, single player, blackjack engine",
   "main": "dist/src/server.js",
   "scripts": {
-    "start": "cross-env ENVIRONMENT=production node dist/server.js",
+    "start": "cross-env ENVIRONMENT=production node dist/src/server.js",
     "dev": "cross-env ENVIRONMENT=development nodemon",
     "test": "jest",
     "build": "rimraf dist && tsc && copy .env dist",
