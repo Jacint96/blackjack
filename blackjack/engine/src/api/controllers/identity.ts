@@ -1,15 +1,17 @@
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
-const crypto = require('crypto')
-const User = require('../schema/user')
-const config = require('../config.json')
+import * as bcrypt from 'bcrypt'
+import * as jwt from 'jsonwebtoken'
+import * as crypto from 'crypto'
+import { Request, Response } from 'express'
+
+import User from '../schema/user'
+import config from '../config.json'
 
 module.exports = {
-  register: (req, res) => {
+  register: (req: Request, res: Response) => {
     if (req.body.email && req.body.name && req.body.password) {
       const created = Date.now()
 
-      User.findOne({ email: req.body.email }, (err, doc) => {
+      User.findOne({ email: req.body.email }, (err: Error, doc: any) => {
         if (!err) {
           if (!doc) {
             bcrypt.hash(req.body.password, 10, (err, hash) => {
@@ -24,7 +26,7 @@ module.exports = {
                   token: token,
                 })
 
-                newUser.save((err, doc) => {
+                newUser.save((err: Error, doc: any) => {
                   if (!err && doc) {
                     res.send({
                       token: doc.token,
@@ -56,9 +58,9 @@ module.exports = {
     }
   },
 
-  login: (req, res) => {
+  login: (req: Request, res: Response) => {
     if (req.body.email && req.body.password) {
-      User.findOne({ email: req.body.email }, (err, doc) => {
+      User.findOne({ email: req.body.email }, (err: Error, doc: any) => {
         if (!err) {
           if (doc) {
             bcrypt.compare(req.body.password, doc.password, (err, matches) => {
@@ -93,9 +95,9 @@ module.exports = {
     }
   },
 
-  delete: (req, res) => {
+  delete: (req: Request, res: Response) => {
     if (req.body.email && req.body.password) {
-      User.findOne({ email: req.body.email }, (err, doc) => {
+      User.findOne({ email: req.body.email }, (err: Error, doc: any) => {
         if (!err) {
           if (doc) {
             bcrypt.compare(req.body.password, doc.password, (err, matches) => {
@@ -133,9 +135,9 @@ module.exports = {
     }
   },
 
-  changePassword: (req, res) => {
+  changePassword: (req: Request & { email: string }, res: Response) => {
     if (req.body.password && req.body.newPassword) {
-      User.findOne({ email: req.email }, (err, doc) => {
+      User.findOne({ email: req.email }, (err: Error, doc: any) => {
         if (!err) {
           if (doc) {
             bcrypt.compare(req.body.password, doc.password, (err, matches) => {
@@ -143,6 +145,7 @@ module.exports = {
                 if (matches) {
                   bcrypt.hash(req.body.newPassword, 10, (err, hash) => {
                     if (!err) {
+                      // @ts-ignore
                       User.findOneAndUpdate({ email: req.email }, { $set: { password: hash } }, (err, doc) => {
                         if (!err) {
                           if (doc) {
@@ -185,9 +188,9 @@ module.exports = {
     }
   },
 
-  generatePasswordResetToken: (req, res) => {
+  generatePasswordResetToken: (req: Request, res: Response) => {
     if (req.body.email) {
-      User.findOne({ email: req.body.email }, (err, doc) => {
+      User.findOne({ email: req.body.email }, (err: Error, doc: any) => {
         if (!err) {
           if (doc) {
             const c = crypto.createCipheriv('aes-256-cbc', config.cipherKey, config.cipherIv)
@@ -217,15 +220,16 @@ module.exports = {
     }
   },
 
-  verifyPasswordResetToken: (req, res) => {
+  verifyPasswordResetToken: (req: Request, res: Response) => {
     if (req.body.token) {
       const d = crypto.createDecipheriv('aes-256-cbc', config.cipherKey, config.cipherIv)
       let decrypted
 
       try {
         decrypted = d.update(req.body.token, 'hex')
+        // @ts-ignore
         decrypted += d.final()
-        decrypted = JSON.parse(decrypted)
+        decrypted = JSON.parse(decrypted.toString())
 
         const now = new Date().getTime()
         const diff = now - decrypted.timestamp
@@ -247,15 +251,16 @@ module.exports = {
     }
   },
 
-  resetPassword: (req, res) => {
+  resetPassword: (req: Request, res: Response) => {
     if (req.body.email && req.body.newPassword && req.body.token) {
       const d = crypto.createDecipheriv('aes-256-cbc', config.cipherKey, config.cipherIv)
       let decrypted
 
       try {
         decrypted = d.update(req.body.token, 'hex')
+        // @ts-ignore
         decrypted += d.final()
-        decrypted = JSON.parse(decrypted)
+        decrypted = JSON.parse(decrypted.toString())
 
         const now = new Date().getTime()
         const diff = now - decrypted.timestamp
@@ -264,7 +269,8 @@ module.exports = {
         if (hours < 24 && decrypted.email === req.body.email) {
           bcrypt.hash(req.body.newPassword, 10, (err, hash) => {
             if (!err) {
-              User.findOneAndUpdate({ email: req.body.email }, { $set: { password: hash } }, (err, doc) => {
+              // @ts-ignore
+              User.findOneAndUpdate({ email: req.body.email }, { $set: { password: hash } }, (err: Error, doc: any) => {
                 if (!err && doc) {
                   res.sendStatus(200)
                 } else {
@@ -291,8 +297,8 @@ module.exports = {
     }
   },
 
-  getBalance: (req, res) => {
-    User.findOne({ email: req.email }, (err, doc) => {
+  getBalance: (req: Request & { email: string }, res: Response) => {
+    User.findOne({ email: req.email }, (err: Error, doc: any) => {
       if (!err) {
         if (doc) {
           res.send({ balance: doc.balance })
@@ -305,8 +311,8 @@ module.exports = {
     })
   },
 
-  topup: (req, res) => {
-    User.findOneAndUpdate({ email: req.email }, { $inc: { balance: 10000 } }, { new: true }, (err, doc) => {
+  topup: (req: Request & { email: string }, res: Response) => {
+    User.findOneAndUpdate({ email: req.email }, { $inc: { balance: 10000 } }, { new: true }, (err: Error, doc: any) => {
       if (!err) {
         if (doc) {
           res.send({ balance: doc.balance })
