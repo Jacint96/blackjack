@@ -3,7 +3,11 @@ import JwtServices from '../../jwt/jwt-service'
 
 import { Request, Response, NextFunction } from 'express'
 
-module.exports = async (req: Request<{ uid: string; email: string }>, res: Response, next: NextFunction) => {
+export const authMiddleware = async (
+  req: Request<{ uid: string; email: string }>,
+  res: Response,
+  next: NextFunction,
+) => {
   const token = req.headers?.authorization
 
   if (!token) {

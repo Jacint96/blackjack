@@ -6,7 +6,7 @@ import { Request, Response } from 'express'
 import User from '../schema/user'
 import config from '../config.json'
 
-module.exports = {
+const identityHandlers = {
   register: (req: Request, res: Response) => {
     if (req.body.email && req.body.name && req.body.password) {
       const created = Date.now()
@@ -325,3 +325,5 @@ module.exports = {
     })
   },
 }
+
+export default identityHandlers
