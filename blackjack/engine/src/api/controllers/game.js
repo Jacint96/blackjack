@@ -84,10 +84,6 @@ module.exports = {
                 newBalance -= newState.finalBet
                 newBalance += newState.wonOnLeft + newState.wonOnRight
 
-                if (newState.wonOnLeft === 0 && newState.wonOnRight === 0) {
-                  newBalance -= newState.finalBet
-                }
-
                 User.findOneAndUpdate({ email: req.email }, { $set: { balance: newBalance } }, (err, doc) => {
                   if (err || !doc) {
                     res.sendStatus(500)
