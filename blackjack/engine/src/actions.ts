@@ -18,8 +18,7 @@ export const restore = (): Action => {
   }
 }
 
-// @ts-ignore
-export const deal = ({ bet = 10, sideBets = { luckyLucky: 0 } }: { bet: number; sideBets: any } = {}): Action => {
+export const deal = ({ bet = 10, sideBets = { luckyLucky: 0 } }: { bet?: number; sideBets?: any } = {}): Action => {
   return {
     type: TYPES.DEAL,
     payload: {
@@ -29,11 +28,11 @@ export const deal = ({ bet = 10, sideBets = { luckyLucky: 0 } }: { bet: number; 
   }
 }
 
-export const insurance = ({ bet = 0 }: { bet: number }): Action => {
+export const insurance = (bet?: { bet?: number }): Action => {
   return {
     type: TYPES.INSURANCE,
     payload: {
-      bet,
+      bet: bet?.bet ?? 0,
     },
   }
 }

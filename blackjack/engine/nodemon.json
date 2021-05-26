@@ -5,5 +5,5 @@
     "src/**/*.spec.ts",
     "src/**/*.test.ts"
   ],
-  "exec": "ts-node ./src/server.ts"
+  "exec": "ts-node --project ./tsconfig.json ./src/server.ts"
 }

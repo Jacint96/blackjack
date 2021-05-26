@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import envConfig from '../../../environment'
+import envConfig from '../../environment'
 
 export async function ensureDbConnection(): Promise<void> {
   if (mongoose.connection.readyState !== 0) return
