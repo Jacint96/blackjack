@@ -28,7 +28,8 @@
   },
   "include": [
     "src",
-    "@types"
+    "@types",
+    "environment.ts"
   ],
   "exclude": [
     "node_modules",

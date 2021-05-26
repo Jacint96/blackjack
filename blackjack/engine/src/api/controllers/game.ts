@@ -1,14 +1,16 @@
 import type { State } from '../../types'
-import { Request, Response } from 'express'
 
+import { Request, Response } from 'express'
 const { Game, actions, presets } = require('../../game-engine')
+
+import envConfig from '../../../environment'
+
 const redis = require('redis')
 const User = require('../schema/user')
 
 type CustomRequest = Request & { uid: string; email: string }
 
-const redisHost = process.env.DOCKER ? 'blackjack-redis' : 'localhost'
-const client = redis.createClient({ url: `redis://${redisHost}` }) // úgy kéne mint a db-handlert
+const client = redis.createClient({ url: envConfig.redisHost }) // úgy kéne mint a db-handlert
 
 const overrideRules = {
   decks: 8,

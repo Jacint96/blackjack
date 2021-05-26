@@ -1,16 +1,15 @@
 import mongoose from 'mongoose'
+import envConfig from '../../../environment'
 
 export async function ensureDbConnection(): Promise<void> {
   if (mongoose.connection.readyState !== 0) return
-
-  const dbHost = process.env.DOCKER ? 'blackjack-mongo:27018' : 'localhost'
 
   // Configure mongoose to use Promises, because callbacks are passe.
   mongoose.Promise = global.Promise
 
   // Connect to the Mongo DB
   try {
-    await mongoose.connect(`mongodb://${dbHost}/Blackjack`, {
+    await mongoose.connect(envConfig.mongoDb, {
       useUnifiedTopology: true,
       useNewUrlParser: true,
       useFindAndModify: false,

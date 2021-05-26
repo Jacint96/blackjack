@@ -1,18 +1,18 @@
 {
   "name": "engine-blackjack",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "NodeJs, single player, blackjack engine",
-  "main": "dist/server.js",
+  "main": "dist/src/server.js",
   "scripts": {
     "start": "cross-env ENVIRONMENT=production node dist/server.js",
     "dev": "cross-env ENVIRONMENT=development nodemon",
     "test": "jest",
-    "build": "rimraf dist && tsc",
+    "build": "rimraf dist && tsc && copy .env dist",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=14.0.0"
   },
   "author": "Jacint Korolovych",
   "license": "UNLICENSED",
@@ -26,6 +26,7 @@
     "@types/node": "^15.6.0",
     "@typescript-eslint/eslint-plugin": "^4.24.0",
     "@typescript-eslint/parser": "^4.24.0",
+    "copy": "^0.3.2",
     "cross-env": "^7.0.3",
     "eslint": "^7.27.0",
     "eslint-config-prettier": "^8.3.0",
