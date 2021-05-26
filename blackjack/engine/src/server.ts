@@ -2,12 +2,15 @@ import cors from 'cors'
 import chalk from 'chalk'
 import express from 'express'
 import bodyParser from 'body-parser'
+import { ensureDbConnection } from './api/db-handler/mongoose'
 
 // const express = require('express')
 const routes = require('./api/routes')
 const morgan = require('morgan')
 
 const app = express()
+
+const PORT = 6001
 
 app.use(cors())
 app.use(bodyParser.json())
@@ -44,5 +47,15 @@ app.use(
 // API routes
 app.use('/api', routes)
 
-// Listen on port
-app.listen(6001)
+ensureDbConnection()
+  .then(() => {
+    // Listen on port
+    app.listen(PORT, () => {
+      console.info(`Server is istening on port: ${PORT}`)
+    })
+  })
+  .catch((e) => {
+    console.error(e)
+    console.error('Failed to connect to your DB!')
+    process.exit(1)
+  })

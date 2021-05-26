@@ -1,19 +1,14 @@
+import type { State } from '../../types'
+import { Request, Response } from 'express'
+
 const { Game, actions, presets } = require('../../game-engine')
 const redis = require('redis')
 const User = require('../schema/user')
-const mongoose = require('../db-handler/mongoose.js')
 
-mongoose()
-  .then(() => {
-    console.info('Db connected!')
-  })
-  .catch((e) => {
-    console.error('Mongoose connection error!')
-    console.error(e)
-  })
+type CustomRequest = Request & { uid: string; email: string }
 
 const redisHost = process.env.DOCKER ? 'blackjack-redis' : 'localhost'
-const client = redis.createClient({ url: `redis://${redisHost}` })
+const client = redis.createClient({ url: `redis://${redisHost}` }) // úgy kéne mint a db-handlert
 
 const overrideRules = {
   decks: 8,
@@ -21,20 +16,20 @@ const overrideRules = {
 }
 
 module.exports = {
-  start: (req, res) => {
+  start: (req: CustomRequest, res: Response) => {
     const game = new Game(null, presets.getRules(overrideRules))
     const afterDealState = game.dispatch(actions.deal({ bet: parseInt(req.params.bet) }))
     client.set(req.uid.toString(), JSON.stringify(afterDealState))
     res.send(afterDealState)
   },
 
-  end: (req, res) => {
+  end: (req: CustomRequest, res: Response) => {
     client.del(req.uid.toString())
     res.sendStatus(200)
   },
 
-  getState: (req, res) => {
-    client.get(req.uid.toString(), (err, state) => {
+  getState: (req: CustomRequest, res: Response) => {
+    client.get(req.uid.toString(), (err: Error, state: State) => {
       if (!err) {
         res.send(state)
       } else {
@@ -43,11 +38,11 @@ module.exports = {
     })
   },
 
-  doAction: (req, res) => {
-    client.get(req.uid.toString(), (err, state) => {
+  doAction: (req: CustomRequest, res: Response) => {
+    client.get(req.uid.toString(), (err: Error, state: any) => {
       if (!err) {
         const game = new Game(JSON.parse(state))
-        let newState
+        let newState: any
 
         switch (req.params.action) {
           case 'restore':
@@ -76,19 +71,22 @@ module.exports = {
         }
 
         if (newState.stage === 'done') {
-          User.findOne({ email: req.email }, (err, doc) => {
+          User.findOne({ email: req.email }, (err: Error, doc: any) => {
             if (!err) {
               if (doc) {
-                
                 let newBalance = doc.balance
                 newBalance -= newState.finalBet
                 newBalance += newState.wonOnLeft + newState.wonOnRight
 
-                User.findOneAndUpdate({ email: req.email }, { $set: { balance: newBalance } }, (err, doc) => {
-                  if (err || !doc) {
-                    res.sendStatus(500)
-                  }
-                })
+                User.findOneAndUpdate(
+                  { email: req.email },
+                  { $set: { balance: newBalance } },
+                  (err: Error, doc: any) => {
+                    if (err || !doc) {
+                      res.sendStatus(500)
+                    }
+                  },
+                )
               } else {
                 res.sendStatus(404)
               }
