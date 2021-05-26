@@ -10,6 +10,7 @@ module.exports = function () {
   return mongoose.connect(`mongodb://${dbHost}/Blackjack`, {
     useUnifiedTopology: true,  
     useNewUrlParser: true,
+    useCreateIndex: true,
     useFindAndModify: false,
   });
 };

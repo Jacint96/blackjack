@@ -1,10 +1,9 @@
 const { Game, actions, presets } = require('../../game-engine')
-
 const redis = require('redis')
 const User = require('../schema/user')
-const mongooseMiddleware = require('../middleware/mongoose.js')
+const mongoose = require('../db-handler/mongoose.js')
 
-mongooseMiddleware()
+mongoose()
   .then(() => {
     console.info('Db connected!')
   })
@@ -69,6 +68,9 @@ module.exports = {
           case 'stand':
             newState = game.dispatch(actions.stand({ position: req.params.option }))
             break
+          case 'surrender':
+            newState = game.dispatch(actions.surrender())
+            break
           default:
             res.sendStatus(404)
         }
@@ -77,7 +79,10 @@ module.exports = {
           User.findOne({ email: req.email }, (err, doc) => {
             if (!err) {
               if (doc) {
-                let newBalance = doc.balance + newState.wonOnLeft + newState.wonOnRight
+                
+                let newBalance = doc.balance
+                newBalance -= newState.finalBet
+                newBalance += newState.wonOnLeft + newState.wonOnRight
 
                 if (newState.wonOnLeft === 0 && newState.wonOnRight === 0) {
                   newBalance -= newState.finalBet

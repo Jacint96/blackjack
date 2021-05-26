@@ -82,11 +82,7 @@ class Blackjack extends React.PureComponent {
         }
       }
 
-      let newBalance = this.state.balance + state.wonOnLeft + state.wonOnRight
-
-      if (state.wonOnLeft === 0 && state.wonOnRight === 0) {
-        newBalance -= state.finalBet
-      }
+      let newBalance = this.state.balance - state.finalBet + state.wonOnLeft + state.wonOnRight
 
       this.setState({
         balance: newBalance,
@@ -119,7 +115,7 @@ class Blackjack extends React.PureComponent {
       if (response.ok) {
         response.json().then(body => {
           this.setState({
-            gameState: body
+            gameState: body,
           })
 
           this.checkForFinish(body)
@@ -155,6 +151,7 @@ class Blackjack extends React.PureComponent {
   playAgain() {
     this.setState({
       gameState: null,
+      currentHand: 'right',
       availableBalance: this.state.balance,
     })
   }
@@ -186,27 +183,6 @@ class Blackjack extends React.PureComponent {
         case 'c':
           this.clearBet()
           break
-        case '1':
-          this.addToBet(this.denominations[0])
-          break
-        case '2':
-          this.addToBet(this.denominations[1])
-          break
-        case '3':
-          this.addToBet(this.denominations[2])
-          break
-        case '4':
-          this.addToBet(this.denominations[3])
-          break
-        case '5':
-          this.addToBet(this.denominations[4])
-          break
-        case '6':
-          this.addToBet(this.denominations[5])
-          break
-        case '7':
-          this.addToBet(this.denominations[6])
-          break
         default:
           break
       }
@@ -226,9 +202,6 @@ class Blackjack extends React.PureComponent {
           break
         case 'u':
           this.performAction('surrender')
-          break
-        case 'i':
-          this.performAction('insurance')
           break
         default:
           break
@@ -460,6 +433,7 @@ class Blackjack extends React.PureComponent {
                     )}
                   </div>
                 )}
+                <p>Actual bet: {numeral(gameState.initialBet).format('0,0')}</p>
                 <h2>
                   Your hand{' '}
                   {gameState.handInfo[currentHand].playerValue.hi ===
@@ -511,11 +485,6 @@ class Blackjack extends React.PureComponent {
                 {gameState.handInfo[currentHand].availableActions.surrender && (
                   <Button onClick={() => this.performAction('surrender')}>
                     Surrender (U)
-                  </Button>
-                )}
-                {gameState.handInfo[currentHand].availableActions.insurance && (
-                  <Button onClick={() => this.performAction('insurance')}>
-                    Insurance (I)
                   </Button>
                 )}
               </div>
