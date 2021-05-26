@@ -1,12 +1,11 @@
-import type { State } from '../../types'
+import * as redis from 'redis'
 
 import { Request, Response } from 'express'
-const { Game, actions, presets } = require('../../game-engine')
+import { Game, actions, presets } from '../../game-engine'
+
+import User from '../schema/user'
 
 import envConfig from '../../../environment'
-
-const redis = require('redis')
-const User = require('../schema/user')
 
 type CustomRequest = Request & { uid: string; email: string }
 
@@ -19,8 +18,10 @@ const overrideRules = {
 
 const gameController = {
   start: (req: CustomRequest, res: Response) => {
+    // @ts-ignore
     const game = new Game(null, presets.getRules(overrideRules))
-    const afterDealState = game.dispatch(actions.deal({ bet: parseInt(req.params.bet) }))
+    // @ts-ignore
+    const afterDealState = game.dispatch(actions.deal({ bet: parseInt(req.params.bet, 10) }))
     client.set(req.uid.toString(), JSON.stringify(afterDealState))
     res.send(afterDealState)
   },
@@ -31,7 +32,7 @@ const gameController = {
   },
 
   getState: (req: CustomRequest, res: Response) => {
-    client.get(req.uid.toString(), (err: Error, state: State) => {
+    client.get(req.uid.toString(), (err, state) => {
       if (!err) {
         res.send(state)
       } else {
@@ -41,9 +42,9 @@ const gameController = {
   },
 
   doAction: (req: CustomRequest, res: Response) => {
-    client.get(req.uid.toString(), (err: Error, state: any) => {
+    client.get(req.uid.toString(), (err, state) => {
       if (!err) {
-        const game = new Game(JSON.parse(state))
+        const game = new Game(JSON.parse(state!))
         let newState: any
 
         switch (req.params.action) {
@@ -51,6 +52,7 @@ const gameController = {
             newState = game.dispatch(actions.restore())
             break
           case 'insurance':
+            // @ts-ignore
             newState = game.dispatch(actions.insurance())
             break
           case 'double':
@@ -80,15 +82,12 @@ const gameController = {
                 newBalance -= newState.finalBet
                 newBalance += newState.wonOnLeft + newState.wonOnRight
 
-                User.findOneAndUpdate(
-                  { email: req.email },
-                  { $set: { balance: newBalance } },
-                  (err: Error, doc: any) => {
-                    if (err || !doc) {
-                      res.sendStatus(500)
-                    }
-                  },
-                )
+                // @ts-ignore
+                User.findOneAndUpdate({ email: req.email }, { $set: { balance: newBalance } }, (err, doc) => {
+                  if (err || !doc) {
+                    res.sendStatus(500)
+                  }
+                })
               } else {
                 res.sendStatus(404)
               }
