@@ -17,7 +17,7 @@ const overrideRules = {
   insurance: false,
 }
 
-module.exports = {
+const gameController = {
   start: (req: CustomRequest, res: Response) => {
     const game = new Game(null, presets.getRules(overrideRules))
     const afterDealState = game.dispatch(actions.deal({ bet: parseInt(req.params.bet) }))
@@ -106,3 +106,5 @@ module.exports = {
     })
   },
 }
+
+export default gameController
