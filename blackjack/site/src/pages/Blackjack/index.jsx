@@ -344,6 +344,7 @@ class Blackjack extends React.PureComponent {
                       )}
                     </div>
                   )}
+                  <p>Actual bet: {numeral(gameState.initialBet).format('0,0')}</p>
                   <h2>
                     Your hand{' '}
                     {gameState.handInfo.left.playerValue.hi ===
@@ -391,6 +392,7 @@ class Blackjack extends React.PureComponent {
                       )}
                     </div>
                   )}
+                  <p>Actual bet: {numeral(gameState.initialBet).format('0,0')}</p>
                   <h2>
                     Your hand{' '}
                     {gameState.handInfo.right.playerValue.hi ===

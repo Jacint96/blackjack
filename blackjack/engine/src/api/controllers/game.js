@@ -16,7 +16,7 @@ const redisHost = process.env.DOCKER ? 'blackjack-redis' : 'localhost'
 const client = redis.createClient({ url: `redis://${redisHost}` })
 
 const overrideRules = {
-  decks: 6,
+  decks: 8,
   insurance: false,
 }
 
