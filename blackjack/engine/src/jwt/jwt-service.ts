@@ -1,5 +1,5 @@
 import * as jwt from 'jsonwebtoken'
-import config from '../api/config.json'
+import config from '../config/config.json'
 
 const verify = <T extends { email: string }>(token: string): Promise<T | void> =>
   new Promise((resolve, reject) => {

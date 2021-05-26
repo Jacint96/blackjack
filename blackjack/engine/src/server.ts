@@ -1,12 +1,11 @@
 import cors from 'cors'
 import chalk from 'chalk'
+import morgan from 'morgan'
 import express from 'express'
 import bodyParser from 'body-parser'
-import { ensureDbConnection } from './api/db-handler/mongoose'
 
-// const express = require('express')
-const routes = require('./api/routes')
-const morgan = require('morgan')
+import { mainRouter } from './api/routes'
+import { ensureDbConnection } from './db-handler/mongoose'
 
 const app = express()
 
@@ -31,21 +30,19 @@ const colorizeStatus = (status: string) => {
 }
 
 app.use(
-  // TODO: later
-  // @ts-ignore
   morgan((tokens, req, res) => {
     return [
       chalk.grey(new Date().toISOString()),
       chalk.yellow(tokens.method(req, res)),
       tokens.url(req, res),
-      colorizeStatus(tokens.status(req, res)),
+      colorizeStatus(tokens.status(req, res) ?? ''),
       `(${tokens['response-time'](req, res)} ms)`,
     ].join(' ')
   }),
 )
 
 // API routes
-app.use('/api', routes)
+app.use('/api', mainRouter)
 
 ensureDbConnection()
   .then(() => {

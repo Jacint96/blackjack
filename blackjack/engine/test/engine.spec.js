@@ -5,7 +5,7 @@ describe('calculate()', function () {
   it('should return hi/lo value when cards contains "Ace"', function () {
     const cards = serializeCards('♠1 ♥5')
     const values = lib.calculate(cards)
-   
+
     expect(values.hi).eqWithMsg(16, 'hi')
     expect(values.lo).eqWithMsg(6, 'lo')
   })
@@ -51,8 +51,11 @@ describe('prize calculation', function () {
       bet: initialBet,
     }
     expect(lib.getPrize(playerHand, dealerCards)).eqWithMsg(initialBet * 2, 'player Won twice')
-    expect(lib.getPrize(playerHand, dealerCards.concat(serializeCards('♥1')))).eqWithMsg(initialBet, 'player Push (bet value is returned')
-    expect(lib.getPrize(playerHand, dealerCards.concat(serializeCards('♥2')))).eqWithMsg( 0, 'player lose')
+    expect(lib.getPrize(playerHand, dealerCards.concat(serializeCards('♥1')))).eqWithMsg(
+      initialBet,
+      'player Push (bet value is returned',
+    )
+    expect(lib.getPrize(playerHand, dealerCards.concat(serializeCards('♥2')))).eqWithMsg(0, 'player lose')
   })
   it('should pay insurance when dealer has BJ', function () {
     const playerCards = serializeCards('2d 3d')

@@ -4,7 +4,7 @@ import * as crypto from 'crypto'
 import { Request, Response } from 'express'
 
 import User from '../schema/user'
-import config from '../config.json'
+import config from '../../config/config.json'
 
 const identityHandlers = {
   register: (req: Request, res: Response) => {
@@ -135,7 +135,7 @@ const identityHandlers = {
     }
   },
 
-  changePassword: (req: Request & { email: string }, res: Response) => {
+  changePassword: (req: Request, res: Response) => {
     if (req.body.password && req.body.newPassword) {
       User.findOne({ email: req.email }, (err: Error, doc: any) => {
         if (!err) {
@@ -145,8 +145,7 @@ const identityHandlers = {
                 if (matches) {
                   bcrypt.hash(req.body.newPassword, 10, (err, hash) => {
                     if (!err) {
-                      // @ts-ignore
-                      User.findOneAndUpdate({ email: req.email }, { $set: { password: hash } }, (err, doc) => {
+                      User.findOneAndUpdate({ email: req.email }, { $set: { password: hash } }, {}, (err, doc) => {
                         if (!err) {
                           if (doc) {
                             res.sendStatus(200)
@@ -227,9 +226,8 @@ const identityHandlers = {
 
       try {
         decrypted = d.update(req.body.token, 'hex')
-        // @ts-ignore
-        decrypted += d.final()
-        decrypted = JSON.parse(decrypted.toString())
+        decrypted = decrypted.toString() + d.final().toString()
+        decrypted = JSON.parse(decrypted)
 
         const now = new Date().getTime()
         const diff = now - decrypted.timestamp
@@ -258,9 +256,8 @@ const identityHandlers = {
 
       try {
         decrypted = d.update(req.body.token, 'hex')
-        // @ts-ignore
-        decrypted += d.final()
-        decrypted = JSON.parse(decrypted.toString())
+        decrypted = decrypted.toString() + d.final().toString()
+        decrypted = JSON.parse(decrypted)
 
         const now = new Date().getTime()
         const diff = now - decrypted.timestamp
@@ -269,15 +266,19 @@ const identityHandlers = {
         if (hours < 24 && decrypted.email === req.body.email) {
           bcrypt.hash(req.body.newPassword, 10, (err, hash) => {
             if (!err) {
-              // @ts-ignore
-              User.findOneAndUpdate({ email: req.body.email }, { $set: { password: hash } }, (err: Error, doc: any) => {
-                if (!err && doc) {
-                  res.sendStatus(200)
-                } else {
-                  // mongoose error
-                  res.sendStatus(500)
-                }
-              })
+              User.findOneAndUpdate(
+                { email: req.body.email },
+                { $set: { password: hash } },
+                {},
+                (err: Error, doc: any) => {
+                  if (!err && doc) {
+                    res.sendStatus(200)
+                  } else {
+                    // mongoose error
+                    res.sendStatus(500)
+                  }
+                },
+              )
             } else {
               // bcrypt error
               res.sendStatus(500)
@@ -297,7 +298,7 @@ const identityHandlers = {
     }
   },
 
-  getBalance: (req: Request & { email: string }, res: Response) => {
+  getBalance: (req: Request, res: Response) => {
     User.findOne({ email: req.email }, (err: Error, doc: any) => {
       if (!err) {
         if (doc) {
@@ -311,7 +312,7 @@ const identityHandlers = {
     })
   },
 
-  topup: (req: Request & { email: string }, res: Response) => {
+  topup: (req: Request, res: Response) => {
     User.findOneAndUpdate({ email: req.email }, { $inc: { balance: 10000 } }, { new: true }, (err: Error, doc: any) => {
       if (!err) {
         if (doc) {

@@ -1,15 +1,11 @@
-import * as redis from 'redis'
-
+import { Rule, State } from '../../types'
+import { RedisHandler } from '../../redis-handler/redis-handler'
 import { Request, Response } from 'express'
 import { Game, actions, presets } from '../../game-engine'
 
 import User from '../schema/user'
 
-import envConfig from '../../../environment'
-
-type CustomRequest = Request & { uid: string; email: string }
-
-const client = redis.createClient({ url: envConfig.redisHost }) // úgy kéne mint a db-handlert
+const client = RedisHandler.sharedInstance.client
 
 const overrideRules = {
   decks: 8,
@@ -17,22 +13,20 @@ const overrideRules = {
 }
 
 const gameController = {
-  start: (req: CustomRequest, res: Response) => {
-    // @ts-ignore
-    const game = new Game(null, presets.getRules(overrideRules))
-    // @ts-ignore
-    const afterDealState = game.dispatch(actions.deal({ bet: parseInt(req.params.bet, 10) }))
-    client.set(req.uid.toString(), JSON.stringify(afterDealState))
+  start: (req: Request, res: Response) => {
+    const game = new Game(null as any as State, presets.getRules(overrideRules as any as Rule))
+    const afterDealState = game.dispatch(actions.deal({ bet: parseInt(req.params.bet, 10), sideBets: void 0 }))
+    client.set(req.uid!.toString(), JSON.stringify(afterDealState))
     res.send(afterDealState)
   },
 
-  end: (req: CustomRequest, res: Response) => {
-    client.del(req.uid.toString())
+  end: (req: Request, res: Response) => {
+    client.del(req.uid!.toString())
     res.sendStatus(200)
   },
 
-  getState: (req: CustomRequest, res: Response) => {
-    client.get(req.uid.toString(), (err, state) => {
+  getState: (req: Request, res: Response) => {
+    client.get(req.uid!.toString(), (err, state) => {
       if (!err) {
         res.send(state)
       } else {
@@ -41,8 +35,8 @@ const gameController = {
     })
   },
 
-  doAction: (req: CustomRequest, res: Response) => {
-    client.get(req.uid.toString(), (err, state) => {
+  doAction: (req: Request, res: Response) => {
+    client.get(req.uid!.toString(), (err, state) => {
       if (!err) {
         const game = new Game(JSON.parse(state!))
         let newState: any
@@ -52,7 +46,6 @@ const gameController = {
             newState = game.dispatch(actions.restore())
             break
           case 'insurance':
-            // @ts-ignore
             newState = game.dispatch(actions.insurance())
             break
           case 'double':
@@ -82,8 +75,7 @@ const gameController = {
                 newBalance -= newState.finalBet
                 newBalance += newState.wonOnLeft + newState.wonOnRight
 
-                // @ts-ignore
-                User.findOneAndUpdate({ email: req.email }, { $set: { balance: newBalance } }, (err, doc) => {
+                User.findOneAndUpdate({ email: req.email }, { $set: { balance: newBalance } }, {}, (err, doc) => {
                   if (err || !doc) {
                     res.sendStatus(500)
                   }
@@ -97,7 +89,7 @@ const gameController = {
           })
         }
 
-        client.set(req.uid.toString(), JSON.stringify(newState))
+        client.set(req.uid!.toString(), JSON.stringify(newState))
         res.send(newState)
       } else {
         res.sendStatus(500)
