@@ -313,19 +313,26 @@ const identityHandlers = {
   },
 
   getCredentials: (req: Request, res: Response) => {
+    if (!req.email) {
+      console.error('Get Credentials was called with no or invalid auth token.')
+      res.sendStatus(400)
+      return
+    }
     User.findOne({ email: req.email }, (err: Error, doc: any) => {
-      if (!err) {
-        if (doc) {
-          res.send({ 
-            name: doc.name,
-            email: doc.email 
-          })
-        } else {
-          res.sendStatus(404)
-        }
-      } else {
+      if (err) {
         res.sendStatus(500)
+        return
       }
+
+      if (!doc) {
+        res.sendStatus(404)
+        return
+      }
+
+      res.send({
+        name: doc.name,
+        email: doc.email,
+      })
     })
   },
 

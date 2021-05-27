@@ -11,6 +11,10 @@ router.route('/').get((req, res) => {
 })
 
 // Identity
+// GET
+router.use(authMiddleware).route('/identity/credentials').get(identityHandlers.getCredentials)
+
+// POST
 router.route('/identity/register').post(identityHandlers.register)
 router.route('/identity/login').post(identityHandlers.login)
 router.route('/identity/delete').post(identityHandlers.delete)
