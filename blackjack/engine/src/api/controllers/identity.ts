@@ -312,6 +312,23 @@ const identityHandlers = {
     })
   },
 
+  getCredentials: (req: Request, res: Response) => {
+    User.findOne({ email: req.email }, (err: Error, doc: any) => {
+      if (!err) {
+        if (doc) {
+          res.send({ 
+            name: doc.name,
+            email: doc.email 
+          })
+        } else {
+          res.sendStatus(404)
+        }
+      } else {
+        res.sendStatus(500)
+      }
+    })
+  },
+
   topup: (req: Request, res: Response) => {
     User.findOneAndUpdate({ email: req.email }, { $inc: { balance: 10000 } }, { new: true }, (err: Error, doc: any) => {
       if (!err) {

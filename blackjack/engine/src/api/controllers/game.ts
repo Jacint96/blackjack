@@ -14,10 +14,39 @@ const overrideRules = {
 
 const gameController = {
   start: (req: Request, res: Response) => {
-    const game = new Game(null as any as State, presets.getRules(overrideRules as any as Rule))
-    const afterDealState = game.dispatch(actions.deal({ bet: parseInt(req.params.bet, 10), sideBets: void 0 }))
-    client.set(req.uid!.toString(), JSON.stringify(afterDealState))
-    res.send(afterDealState)
+    client.get(req.uid!.toString(), (err, state) => {
+      if (!err) {
+        const game = new Game(null as any as State, presets.getRules(overrideRules as any as Rule))
+        const afterDealState = game.dispatch(actions.deal({ bet: parseInt(req.params.bet, 10), sideBets: void 0 }))
+
+        if (afterDealState.stage === 'done') {
+          User.findOne({ email: req.email }, (err: Error, doc: any) => {
+            if (!err) {
+              if (doc) {
+                let newBalance = doc.balance
+                newBalance -= afterDealState.finalBet
+                newBalance += afterDealState.wonOnLeft + afterDealState.wonOnRight
+
+                User.findOneAndUpdate({ email: req.email }, { $set: { balance: newBalance } }, {}, (err, doc) => {
+                  if (err || !doc) {
+                    res.sendStatus(500)
+                  }
+                })
+              } else {
+                res.sendStatus(404)
+              }
+            } else {
+              res.sendStatus(500)
+            }
+          })
+        }
+
+        client.set(req.uid!.toString(), JSON.stringify(afterDealState))
+        res.send(afterDealState)
+      } else {
+        res.sendStatus(500)
+      }
+    })
   },
 
   end: (req: Request, res: Response) => {

@@ -38,9 +38,6 @@ class Layout extends React.PureComponent {
             property="og:title"
             content={title ? `${title} | Blackjack` : 'Blackjack'}
           />
-          <meta property="description" content="React JS Blackjack game" />
-          <meta property="og:description" content="React JS Blackjack game" />
-          <meta property="og:type" content="website" />
         </Helmet>
         <div className={styles.PageContent}>
           <div className={styles.Nav}>
@@ -50,7 +47,7 @@ class Layout extends React.PureComponent {
                   Blackjack
                 </Link>
                 <div className={styles.ProfileControls}>
-                  <p>Balance: {numeral(balance).format('0,0')}</p>
+                  <p>Balance: {numeral(balance).format('0,0')} $</p>
                   <Link to="/account">Account</Link>
                   <button onClick={this.handleLogout}>Log out</button>
                 </div>

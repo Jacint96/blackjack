@@ -139,7 +139,7 @@ export const getHandInfoAfterSplit = (playerCards: Array<Card>, dealerCards: Arr
   hand.availableActions = {
     ...availableActions,
     split: false,
-    double: !hand.close && playerCards.length === 2,
+    double: false,
     insurance: false,
     surrender: false,
     hit: !!availableActions?.hit,
