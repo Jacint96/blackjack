@@ -5,6 +5,7 @@ import Input from '../../components/Input'
 import Button from '../../components/Button'
 
 import styles from './Landing.module.scss'
+import { showErrorMessage } from "../../utils/utils";
 
 class Landing extends React.PureComponent {
   constructor() {
@@ -34,12 +35,14 @@ class Landing extends React.PureComponent {
         password: form.get('password')
       })
     }).then(response => {
-      if (response.ok) {
-        response.json().then(body => {
-          this.cookies.set('token', body.token, { path: '/' })
-          this.props.history.push('/blackjack')
-        })
-      }
+      if (!response.ok) throw new Error('Response was not ok!')
+      return response.json().then(body => {
+        this.cookies.set('token', body.token, { path: '/' })
+        this.props.history.push('/blackjack')
+      })
+    }).catch(e => {
+      console.error(e)
+      showErrorMessage('Hiba történt', 'Sajnáljuk, hiba történt!') // TODO: pontosítsd akár kód alapján
     })
   }
 
@@ -71,19 +74,19 @@ class Landing extends React.PureComponent {
     return (
       <Layout title="Log in">
         <h1 className={styles.Logotype}>Blackjack</h1>
-        <hr />
+        <hr/>
         <div className={styles.FormGrid}>
           <form onSubmit={this.handleLogin}>
             <h2>Log in</h2>
-            <Input type="email" name="email" label="Email" required />
-            <Input type="password" name="password" label="Password" required />
+            <Input type="email" name="email" label="Email" required/>
+            <Input type="password" name="password" label="Password" required/>
             <Button>Log in</Button>
           </form>
           <form onSubmit={this.handleRegister}>
             <h2>Register</h2>
-            <Input type="text" name="name" label="Name" required />
-            <Input type="email" name="email" label="Email" required />
-            <Input type="password" name="password" label="Password" required />
+            <Input type="text" name="name" label="Name" required/>
+            <Input type="email" name="email" label="Email" required/>
+            <Input type="password" name="password" label="Password" required/>
             <Button>Register</Button>
           </form>
         </div>
