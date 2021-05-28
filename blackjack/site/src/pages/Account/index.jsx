@@ -100,8 +100,11 @@ class Account extends React.PureComponent {
     const { name, email, balance, passwordChangeSuccess } = this.state
     return (
       <Layout title="Account" balance={balance}>
-        <h1 className={styles.Heading}>Welcome</h1>
+        <h1 className={styles.Heading}>Welcome, {name}</h1>
         <hr />
+        <h2 className={styles.Subheading}>
+          <span>({email})</span>
+        </h2>
 
         <h2 className={styles.Subheading}>Balance</h2>
         <p className={styles.Balance}>

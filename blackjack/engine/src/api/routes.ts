@@ -12,7 +12,7 @@ router.route('/').get((req, res) => {
 
 // Identity
 // GET
-router.use(authMiddleware).route('/identity/credentials').get(identityHandlers.getCredentials)
+
 
 // POST
 router.route('/identity/register').post(identityHandlers.register)
@@ -22,6 +22,7 @@ router.use(authMiddleware).route('/identity/password/change').post(identityHandl
 router.route('/identity/password/reset/token').post(identityHandlers.generatePasswordResetToken)
 router.route('/identity/password/reset/verify').post(identityHandlers.verifyPasswordResetToken)
 router.route('/identity/password/reset').post(identityHandlers.resetPassword)
+router.use(authMiddleware).route('/identity/credentials').get(identityHandlers.getCredentials)
 router.use(authMiddleware).route('/identity/balance').get(identityHandlers.getBalance)
 router.use(authMiddleware).route('/identity/topup').get(identityHandlers.topup)
 
