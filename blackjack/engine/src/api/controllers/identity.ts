@@ -312,6 +312,30 @@ const identityHandlers = {
     })
   },
 
+  getCredentials: (req: Request, res: Response) => {
+    if (!req.email) {
+      console.error('Get Credentials was called with no or invalid auth token.')
+      res.sendStatus(400)
+      return
+    }
+    User.findOne({ email: req.email }, (err: Error, doc: any) => {
+      if (err) {
+        res.sendStatus(500)
+        return
+      }
+
+      if (!doc) {
+        res.sendStatus(404)
+        return
+      }
+
+      res.send({
+        name: doc.name,
+        email: doc.email,
+      })
+    })
+  },
+
   topup: (req: Request, res: Response) => {
     User.findOneAndUpdate({ email: req.email }, { $inc: { balance: 10000 } }, { new: true }, (err: Error, doc: any) => {
       if (!err) {

@@ -61,7 +61,6 @@ class Blackjack extends React.PureComponent {
   checkForFinish(state) {
     if (state.stage === 'done') {
       let outcome = ''
-
       if (state.wonOnLeft + state.wonOnRight > state.finalBet) {
         outcome += '🎉 You won!'
 
@@ -82,8 +81,7 @@ class Blackjack extends React.PureComponent {
         }
       }
 
-      let newBalance = this.state.balance - state.finalBet + state.wonOnLeft + state.wonOnRight
-
+      let newBalance = this.state.balance + state.wonOnLeft + state.wonOnRight
       this.setState({
         balance: newBalance,
         outcome: outcome
@@ -103,7 +101,7 @@ class Blackjack extends React.PureComponent {
     this.setState({
       outcome: null,
       valueToBet: 0,
-      availableBalance: this.state.balance,
+      balance: this.state.balance - bet,
       denominationsToBet: []
     })
 
@@ -116,6 +114,7 @@ class Blackjack extends React.PureComponent {
         response.json().then(body => {
           this.setState({
             gameState: body,
+            availableBalance: this.state.balance
           })
 
           this.checkForFinish(body)
@@ -136,12 +135,22 @@ class Blackjack extends React.PureComponent {
     }).then(response => {
       if (response.ok) {
         response.json().then(body => {
-          this.setState({ gameState: body })
-
+          this.setState({ 
+            gameState: body
+          })
+          if (action === 'double'){
+            this.setState({ 
+              balance: this.state.availableBalance - this.state.gameState.initialBet
+            })
+          }
+          if (action === 'split'){
+            this.setState({ 
+              balance: this.state.availableBalance - this.state.gameState.initialBet
+            })
+          }
           if (body.stage.startsWith('player-turn-')) {
             this.setState({ currentHand: body.stage.split('-')[2] })
           }
-
           this.checkForFinish(body)
         })
       }

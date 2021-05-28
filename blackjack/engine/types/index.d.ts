@@ -1,4 +1,4 @@
-declare module 'engine-blackjack' {
+declare module 'blackjack-game-logic' {
     interface ActionPayload {
         bet?: number;
         position?: 'right' | 'left';
@@ -151,12 +151,9 @@ declare module 'engine-blackjack' {
 
     export namespace actions {
         function deal(options?: { bet: number; sideBets: SideBetsInfo }): Action;
-        // function dealerHit(options?: { dealerHoleCard: Card }): Action;
         function hit(options?: { position: 'right' | 'left' }): Action;
         function insurance(options?: { bet: number }): Action;
-        // function invalid(action: Action, info: string): Action;
         function restore(): Action;
-        // function showdown(options?: { dealerHoleCardOnly: boolean }): Action;
         function split(): Action;
         function stand(options?: { position: 'right' | 'left' }): Action;
         function surrender(): Action;

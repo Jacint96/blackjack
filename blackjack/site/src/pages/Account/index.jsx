@@ -20,17 +20,43 @@ class Account extends React.PureComponent {
   componentDidMount() {
     fetch(`${process.env.REACT_APP_API_BASE}/api/identity/balance`, {
       headers: {
-        Authorization: this.props.token
-      }
-    }).then(response => {
-      if (response.ok) {
-        response.json().then(body => {
-          this.setState({
-            balance: body.balance
-          })
-        })
-      }
+        Authorization: this.props.token,
+      },
     })
+      .then((response) => {
+        if (!response.ok) throw new Error("Response was not ok");
+        return response.json();
+      })
+      .then(
+        (body) =>
+          new Promise((resolve, reject) => {
+            fetch(
+              `${process.env.REACT_APP_API_BASE}/api/identity/credentials`,
+              { headers: { Authorization: this.props.token } }
+            )
+              .then((response) => resolve([body.balance, response]))
+              .catch((e) => reject(e));
+          })
+      )
+      .then(([balance, response]) => {
+        if (!response.ok) throw new Error("Second response was not ok");
+        return new Promise((resolve, reject) => {
+          response
+            .json()
+            .then((data) => resolve([balance, data]))
+            .catch((e) => reject(e));
+        });
+      })
+      .then(([balance, userData]) => {
+        this.setState({
+          balance,
+          name: userData.name,
+          email: userData.email,
+        });
+      })
+      .catch((e) => {
+        console.error(e);
+      });
   }
 
   handleChangePassword(e) {
@@ -71,15 +97,18 @@ class Account extends React.PureComponent {
   }
 
   render() {
-    const { balance, passwordChangeSuccess } = this.state
+    const { name, email, balance, passwordChangeSuccess } = this.state
     return (
       <Layout title="Account" balance={balance}>
-        <h1 className={styles.Heading}>Account</h1>
+        <h1 className={styles.Heading}>Welcome, {name}</h1>
         <hr />
+        <h2 className={styles.Subheading}>
+          <span>({email})</span>
+        </h2>
 
         <h2 className={styles.Subheading}>Balance</h2>
         <p className={styles.Balance}>
-          <span>{numeral(balance).format('0,0')}</span>
+          <span>{numeral(balance).format('0,0')}$</span>
         </p>
         <div className={styles.ButtonGroup}>
           <Button onClick={this.handleTopup}>Top-up</Button>
