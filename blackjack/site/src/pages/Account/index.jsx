@@ -5,6 +5,7 @@ import Button from '../../components/Button'
 import Input from '../../components/Input'
 
 import styles from './Account.module.scss'
+import { showErrorMessage } from "../../utils/utils";
 
 class Account extends React.PureComponent {
   constructor() {
@@ -56,6 +57,7 @@ class Account extends React.PureComponent {
       })
       .catch((e) => {
         console.error(e);
+        showErrorMessage('Hiba történt', 'Sajnáljuk, hiba történt!') // TODO: pontosítsd akár kód alapján
       });
   }
 

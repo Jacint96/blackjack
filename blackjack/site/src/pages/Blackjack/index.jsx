@@ -7,6 +7,7 @@ import Button from '../../components/Button'
 import Modal from '../../components/Modal'
 
 import styles from './Blackjack.module.scss'
+import { showErrorMessage } from "../../utils/utils";
 
 class Blackjack extends React.PureComponent {
   constructor() {
@@ -110,16 +111,18 @@ class Blackjack extends React.PureComponent {
         Authorization: this.props.token
       }
     }).then(response => {
-      if (response.ok) {
-        response.json().then(body => {
-          this.setState({
-            gameState: body,
-            availableBalance: this.state.balance
-          })
-
-          this.checkForFinish(body)
+      if (!response.ok) throw new Error('Response was not ok.')
+      return response.json().then(body => {
+        this.setState({
+          gameState: body,
+          availableBalance: this.state.balance
         })
-      }
+
+        this.checkForFinish(body)
+      })
+    }).catch(e => {
+      console.error(e)
+      showErrorMessage('Hiba történt', 'Sajnáljuk, hiba történt!') // TODO: pontosítsd akár kód alapján
     })
   }
 
@@ -135,16 +138,16 @@ class Blackjack extends React.PureComponent {
     }).then(response => {
       if (response.ok) {
         response.json().then(body => {
-          this.setState({ 
+          this.setState({
             gameState: body
           })
-          if (action === 'double'){
-            this.setState({ 
+          if (action === 'double') {
+            this.setState({
               balance: this.state.availableBalance - this.state.gameState.initialBet
             })
           }
-          if (action === 'split'){
-            this.setState({ 
+          if (action === 'split') {
+            this.setState({
               balance: this.state.availableBalance - this.state.gameState.initialBet
             })
           }
@@ -300,17 +303,17 @@ class Blackjack extends React.PureComponent {
                   : `(${gameState.dealerValue.lo}/${gameState.dealerValue.hi})`}
               </h2>
               {gameState.dealerHoleCard &&
-                !gameState.dealerCards.filter(
-                  x =>
-                    x.text === gameState.dealerHoleCard.text &&
-                    x.suite === gameState.dealerHoleCard.suite
-                ).length && (
-                  <img
-                    className={styles.Card}
-                    src={`/asset/image/card/B${gameState.dealerHoleCard.color}.svg`}
-                    alt="Card 1B"
-                  />
-                )}
+              !gameState.dealerCards.filter(
+                x =>
+                  x.text === gameState.dealerHoleCard.text &&
+                  x.suite === gameState.dealerHoleCard.suite
+              ).length && (
+                <img
+                  className={styles.Card}
+                  src={`/asset/image/card/B${gameState.dealerHoleCard.color}.svg`}
+                  alt="Card 1B"
+                />
+              )}
               {gameState.dealerCards.map((card, i) => {
                 const cardId = card.text + card.suite.toUpperCase()[0]
                 return (
@@ -329,8 +332,8 @@ class Blackjack extends React.PureComponent {
                   className={classnames(
                     styles.CardGroup,
                     gameState.stage.startsWith('player-turn-') &&
-                      gameState.stage !== 'player-turn-left' &&
-                      styles.disabled
+                    gameState.stage !== 'player-turn-left' &&
+                    styles.disabled
                   )}
                 >
                   {gameState.stage === 'done' && (
@@ -377,8 +380,8 @@ class Blackjack extends React.PureComponent {
                   className={classnames(
                     styles.CardGroup,
                     gameState.stage.startsWith('player-turn-') &&
-                      gameState.stage !== 'player-turn-right' &&
-                      styles.disabled
+                    gameState.stage !== 'player-turn-right' &&
+                    styles.disabled
                   )}
                 >
                   {gameState.stage === 'done' && (
@@ -507,7 +510,7 @@ class Blackjack extends React.PureComponent {
             )}
             {process.env.REACT_APP_DEBUG === 'true' && (
               <>
-                <hr />
+                <hr/>
                 <pre>{JSON.stringify(gameState, null, 2)}</pre>
               </>
             )}

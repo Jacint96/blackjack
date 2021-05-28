@@ -72,20 +72,16 @@ class PrivateRoute extends React.Component {
   }
 }
 
-class RouterComponent extends React.Component {
-  render() {
-    return (
-      <Router>
-        <ScrollToTopComponent>
-          <Switch>
-            <Route exact path="/" component={Landing} />
-            <PrivateRoute path="/blackjack" component={Blackjack} />
-            <PrivateRoute path="/account" component={Account} />
-          </Switch>
-        </ScrollToTopComponent>
-      </Router>
-    )
-  }
-}
+const AppComponent = () =>
+  <Router>
+    <ScrollToTopComponent>
+      <Switch>
+        <Route exact path="/" component={Landing}/>
+        <PrivateRoute path="/blackjack" component={Blackjack}/>
+        <PrivateRoute path="/account" component={Account}/>
+      </Switch>
+    </ScrollToTopComponent>
+  </Router>
 
-export default RouterComponent
+
+export default AppComponent
